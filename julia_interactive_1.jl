@@ -34,7 +34,9 @@ end
 # ╔═╡ 5b23e82b-04e3-4fcf-ac7a-2624a8f2112b
 md"""
 # The Lorenz Function
-This function allocates a new array everytime it updates - it is thus slower than it could be. Be we can always optimize it later
+Interactive get-to-know-julia notebook for the **IMPRS-IS BootCamp 2023**
+
+Author: [Benedikt Ehinger](www.s-ccs.de)
 """
 
 # ╔═╡ 4d4685dc-5e45-4893-8a26-3d553cff3bc8
@@ -49,21 +51,31 @@ function lorenz_step(state,fixed,Δt)
 	return [x + Δt*dx,
 			y + Δt*dy,
 			z + Δt*dz] # return the new state
-end
+end;
+
+# ╔═╡ 10ab9257-3073-4f20-924b-29b2990e32a6
+aside(tip(md"""
+This function allocates a new array everytime it updates - it is thus slower than it could be. Be we will optimize it later in Task 4.
+"""),v_offset=-250)
 
 # ╔═╡ 869c811e-bd7a-485e-bac4-4cf0006daeab
 function lorenz(fixed,Δt,n)
 	state0 = [1.0, 0.0, 0.0] # initial state
-	
 	res = Array{Float64}(undef,(3,n)) # initialize an Array to save things
-	
 	res[:,1] .= state0 # assign the initial state
 	
 	for t in 1:n-1
 		res[:,t+1] = lorenz_step(res[:,t],fixed,Δt)
 	end
-	return res
-end
+
+
+	# Lorenz wants to escape often, we have to check to not get weird error for weird parameters
+	nans = isnan.(res) .| isinf.(res) .| (res.>1e3)
+	any(nans) ? @warn("Lorenz escaped - we ran into NaN/Infinity - choose different parameters") : ""
+	
+
+	return res[:,.!any(nans,dims=1)[1,:]][:,1:end-1]
+end;
 
 # ╔═╡ d22214ac-838b-4e69-8b46-dc62985f959d
 begin
@@ -77,18 +89,16 @@ md"""
 # Task 1: Changing parameters
 
 Using Pluto.jl reactive backend, changing a value in some cell, will automatically update all other cells - including plots.
-@bind ρ PlutoUI.Slider(0:0.1:50,show_value=true,default=28)
 """
 
 # ╔═╡ a7302ba3-5620-43e6-aee1-abc46393c265
 question_box(md"Try changing one of the values below of the `fixed` Array - does it work?")
 
 # ╔═╡ 3fdc5e18-c563-499d-bc7a-4ce8200b4d3f
-#Coefficients of the functions. 
-fixed = [5,8,7/8] # in the code: [σ, ρ, β]
+parameters = [5,7,7/8] # in the lorenz_step-function: [σ, ρ, β]
 
 # ╔═╡ da95a4dd-c814-4c6c-b06f-61d34240ea55
-res = lorenz(fixed,Δt,length(tlist))
+res = lorenz(parameters,Δt,length(tlist))
 
 # ╔═╡ 405b7f4e-5dd9-4e9d-8fbf-cd0a979aefd1
 begin
@@ -110,7 +120,7 @@ We can use Sliders instead of fixing the parameters.
 
 A slider is defined like this:
 ```julia
-@bind varname PlutoUI.Slider(from:[stepsize:]to) # [stepsize:] is optional, def: 1
+@bind yourVarName PlutoUI.Slider(from:to) # from:step:to is optional, step by def 1
 ```
 """
 
@@ -134,9 +144,8 @@ md\"\"\"
 **Tip:** the `$(juliacode)` syntax runs the inline `juliacode` and 'interpolates' the output back into the string/output format """)
 
 # ╔═╡ 4856cd8b-26de-4577-ac1a-497aef8d1931
-question_box(md"""Generate three sliders for the three parameters in `fixed`.
-
-Optionally you could also provide some `PlutoUI.CheckBox` or `PlutoUI.Select` to change which dimension is plotted on the x/y axis""")
+question_box(md"""Generate three sliders for the three parameters in `parameters`. Remember to replace the variablenames in the `parameters` vector itself!
+""")
 
 # ╔═╡ 394ea92a-b487-4c39-a377-e9e814bc946b
 # add slider 1
@@ -148,11 +157,17 @@ Optionally you could also provide some `PlutoUI.CheckBox` or `PlutoUI.Select` to
 # add slider 3
 
 # ╔═╡ 09f20ad4-3567-4de7-921a-7bd05048c99d
-f # replot for convenience
+f # replot for your convenience
+
+# ╔═╡ aea4a4c9-3c02-4436-8d11-21140264c807
+question_box(md"""
+If you have time, provide some `PlutoUI.CheckBox` or `PlutoUI.Select` elements, to change which dimension is plotted on the x/y axis
+"""
+)
 
 # ╔═╡ c5791eb1-62e4-47a0-bdc1-c3cb2066bd90
 md"""
-# Benchmark against Python
+# Task 3: Benchmark against Python
 """
 
 # ╔═╡ a69b3724-353f-4639-81f4-0875c4203e12
@@ -184,21 +199,26 @@ xyzs[0] = (1.0, 0., 0.)  # Set initial values
 for i in range(num_steps):
     xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i],fixed) * dt
 
-""",Main,(;fixed=fixed,num_steps=length(tlist)-1,dt=Δt))
+""",Main,(;fixed=parameters,num_steps=length(tlist)-1,dt=Δt))
 
 # ╔═╡ 9ec4822e-8d7b-4948-afe9-228ca2d924ae
-lorenz()
+lorenz(parameters,Δt,length(tlist))
 
 # ╔═╡ 73af4c85-8170-4404-aac7-9d45e698769a
 md"""
-# Optional ideas
+# Task 4: Improve the speed!
 If you are super fast with everything, some optional ideas:
 """
 
 # ╔═╡ 88a8cdfb-5300-41c6-a9ba-2da53d37ee91
 question_box(md"""**Speeding up Python**
 
-Can you speed up the python code to match Julias code? You can test the speed with `@time functioncall(x)`
+Can you speed up the python code to match Julias code?
+""")
+
+# ╔═╡ 11280da3-437a-45a6-bc6f-92ca2d03a98b
+hint(md"""
+Ooops - I don't know Python well enough to actually speed this up, sorry. Be sure to share your speed improvements with me!
 """)
 
 # ╔═╡ 003214b4-e62c-432a-a9a7-9b580c460de4
@@ -219,8 +239,25 @@ Note the `lorenz_step!` exclamationmark. Which means, that now the lorenz_step f
 """)
 
 # ╔═╡ 250144dd-9034-4c05-9316-7bb89df429bf
-Foldable("Alternative solution",md"""
-Surprisingly (to me) this code:
+hint(md"""
+Makue use of the following function
+```julia
+function lorenz_step!(state,fixed,Δt)
+    x, y, z = state   #variables are part of vector array u
+	σ, ρ, β = fixed    #coefficients are part of vector array p
+    
+    dx = σ*(y-x)
+    dy = x*(ρ-z) - y
+    dz = x*y - β*z
+	state .= x + Δt*dx, y + Δt*dy, z + Δt*dz # in place update the state
+	return copy(state) # also return a copy of the state
+end
+```
+""")
+
+# ╔═╡ 49576c5c-15d6-4c56-8190-f2ce022e6233
+hint(md"""
+Somewhat surprising (to me) this code:
 ```julia
 res = hcat([lorenz_step!(state0,fixed,Δt) for s in tlist]...)
 ```
@@ -236,9 +273,6 @@ md"""
 md"""
 What follows here is just some setup code - interesting maybe to see how Python-Packages can be added in the `PythonCall` package
 """
-
-# ╔═╡ 75515a7a-bea9-4dbe-b7a1-9f03d494c721
-
 
 # ╔═╡ 609633d1-2b1b-4834-a1c3-84ffe11bc946
 TableOfContents()
@@ -1724,6 +1758,7 @@ version = "3.5.0+0"
 # ╟─83ed505e-21f8-11ee-1d5c-0f27e8691b73
 # ╟─5b23e82b-04e3-4fcf-ac7a-2624a8f2112b
 # ╠═4d4685dc-5e45-4893-8a26-3d553cff3bc8
+# ╟─10ab9257-3073-4f20-924b-29b2990e32a6
 # ╠═869c811e-bd7a-485e-bac4-4cf0006daeab
 # ╠═d22214ac-838b-4e69-8b46-dc62985f959d
 # ╠═da95a4dd-c814-4c6c-b06f-61d34240ea55
@@ -1733,25 +1768,27 @@ version = "3.5.0+0"
 # ╠═3fdc5e18-c563-499d-bc7a-4ce8200b4d3f
 # ╠═afb15a36-e6c5-4be9-aa8d-beecdb4a70f0
 # ╟─49342d6f-a24a-42aa-9f90-dfff82ad35c2
-# ╠═e911dd57-bedd-49a9-adcf-ec634e668e6f
-# ╟─4856cd8b-26de-4577-ac1a-497aef8d1931
+# ╟─e911dd57-bedd-49a9-adcf-ec634e668e6f
+# ╠═4856cd8b-26de-4577-ac1a-497aef8d1931
 # ╠═394ea92a-b487-4c39-a377-e9e814bc946b
 # ╠═f9d3ca6f-bb83-41fa-9d85-24d0197a72bf
 # ╠═a8908646-6aa9-4774-8257-054370583fcb
 # ╠═09f20ad4-3567-4de7-921a-7bd05048c99d
+# ╟─aea4a4c9-3c02-4436-8d11-21140264c807
 # ╟─c5791eb1-62e4-47a0-bdc1-c3cb2066bd90
-# ╠═a69b3724-353f-4639-81f4-0875c4203e12
 # ╠═4904a74d-ec8c-4d1d-aab9-fb89f16d4bd9
+# ╠═a69b3724-353f-4639-81f4-0875c4203e12
 # ╟─4019ad17-50b0-4983-b375-e237219b99e0
 # ╠═b2137820-d51c-4a9f-8b5a-73f3f7f6cb1b
 # ╠═9ec4822e-8d7b-4948-afe9-228ca2d924ae
 # ╟─73af4c85-8170-4404-aac7-9d45e698769a
 # ╟─88a8cdfb-5300-41c6-a9ba-2da53d37ee91
+# ╟─11280da3-437a-45a6-bc6f-92ca2d03a98b
 # ╟─003214b4-e62c-432a-a9a7-9b580c460de4
 # ╟─250144dd-9034-4c05-9316-7bb89df429bf
+# ╟─49576c5c-15d6-4c56-8190-f2ce022e6233
 # ╟─ce86adc0-f10d-47c9-9436-a6b20c2d496e
 # ╟─02172a1a-ac29-4081-886d-a2daeab0d29d
-# ╠═75515a7a-bea9-4dbe-b7a1-9f03d494c721
 # ╠═bb2d7aa2-f244-4163-8b21-6dd367c465d5
 # ╠═609633d1-2b1b-4834-a1c3-84ffe11bc946
 # ╟─00000000-0000-0000-0000-000000000001

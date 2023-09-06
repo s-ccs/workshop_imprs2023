@@ -22,14 +22,11 @@ begin
 	using HTTP
 end
 
-# ╔═╡ b5e5ba68-9cc1-4055-a4ca-aea54e7622f9
-using Measurements
-
-# ╔═╡ 5706cf61-07da-460b-92af-a5d0e30ae67a
-# ╠═╡ show_logs = false
+# ╔═╡ c963e92f-9116-4ff8-a874-e3e25340e4ae
 begin
-	using PythonCall
-	using RCall
+	using OrdinaryDiffEq
+	import Unitful: N,m,kg,s,  ustrip
+	using Measurements
 end
 
 # ╔═╡ ee02c371-757e-4853-9a93-bc67672c52b5
@@ -71,6 +68,13 @@ end
 
 # ╔═╡ 296e8d4e-2441-4133-936d-dba7f9b80147
 using Turing
+
+# ╔═╡ 5706cf61-07da-460b-92af-a5d0e30ae67a
+# ╠═╡ show_logs = false
+begin
+	using PythonCall
+	using RCall
+end
 
 # ╔═╡ 565a9f1f-2be7-4585-95f7-1e3fb61b6f23
 ChooseDisplayMode()
@@ -116,13 +120,18 @@ md"""
 	 
 """
 
-# ╔═╡ ed089865-5955-4bc3-b58e-bd5cde3072e5
+# ╔═╡ 56fc2f2d-e1d8-424c-a256-4b7b282dcf69
 md"""
 ## The two language problem in science
 
 ![](https://juliadatascience.io/images/language_comparisons.png)
 If you want clarity, you use python/R - if you want speed, you use C++/Fortran.
+"""
 
+# ╔═╡ dd2816bc-230e-4c55-8903-5b817a0ea6d7
+md"""
+---
+![](https://pbs.twimg.com/media/Fg-qasAUAAEZYQk?format=jpg&name=small)
 As a result, numpy is 35% C, pytorch is 43% C++, and even in R, e.g. magritrr is 40% c++.
 
 !!! important
@@ -159,15 +168,13 @@ end;
 
 # ╔═╡ d70cdceb-679b-4a92-b5c1-814d3a66b1b9
 md"""
-## A taster of cool features
+# A taster of cool features & packages
 """
 
 # ╔═╡ bbf8da5b-4974-4d78-a849-ad6afb28435c
 import Unitful: MΩ, ms, mV, nA,mA # Import from package
 
 # ╔═╡ a4b978d6-d395-4e49-8adf-578efab2a9d0
-let
-
 """
 Simulate a simple leaky-integrate-and-fire (LIF) neuron, given
 input current `I` and a timestep `Δt`.
@@ -187,16 +194,59 @@ function first_spike(I, Δt; R = 100MΩ, τ = 20ms)
 	end
 	return nothing # Never spiked
 end
-	first_spike(repeat([-0.5nA],500),1ms)
-end
+
+
+# ╔═╡ 31c21f8e-09c7-4eaa-b5f6-fc2046f77b0a
+first_spike(repeat([-0.5nA],500),1ms)
+
+# ╔═╡ 968adac3-56eb-4ccd-b6a0-9bab802cce29
+
 
 # ╔═╡ a3916666-7788-4716-8d6f-3ea75d9c6ad1
 md"""
-#### combining packages!
+## Combining random packages
 """
 
-# ╔═╡ 325a4eae-4fc1-41f2-aa4b-58d68e20c59f
-1.0nA + 0.5mA ± 0.1mA
+# ╔═╡ 4399b11b-6814-4899-8f6a-12fd9549e3cf
+md"""
+Let's simulate a simple pendulum and use some packages, that actually know **nothing** about eachother
+"""
+
+# ╔═╡ a8575e86-a5f8-4743-bb15-1166a236431a
+begin
+gaccel = (9.79 ± 0.02)N*(m^2/kg^2) # Gravitational constants
+L = (1.00 ± 0.01)m # Length of the pendulum
+
+#Initial Conditions
+u₀ = [(0 ± 0), (π / 3 ± 0.02)] # Initial speed and initial angle
+tspan = (0.0s, 10.0s)
+
+function simplependulum(du,u,p,t)
+    du[1] = u[2]/s
+	du[2] = -(1kg*gaccel/L) * sin(u[1])s/m^2
+end
+
+prob = ODEProblem(simplependulum, u₀, tspan)
+sol = solve(prob, Tsit5(), reltol = 1e-6) |> DataFrame;
+first(sol,2)
+end
+
+# ╔═╡ ff9c0134-2139-4ee6-b81e-5a4b34484619
+let
+	# Linear errorproüagation
+	t = ustrip.(sol.timestamp) # remove unit information
+	y = Measurements.value.(sol.value1) #grab the values
+	er = Measurements.uncertainty.(sol.value1) # grab the uncertainty
+	scatter(t,y)
+	errorbars!(t,y,er)
+	current_figure()
+end
+
+# ╔═╡ 4c13eeaf-f04b-46eb-bcea-771307f8ee1b
+
+
+# ╔═╡ 6c9967ee-2655-4015-81a1-377c46038629
+
 
 # ╔═╡ 18e627c6-3dca-4d6d-a825-5884c5541ffb
 md"""
@@ -205,33 +255,31 @@ Pluto is a reactive notebook - any change in one cell automatically updates all 
 """
 
 # ╔═╡ 57e70c41-2f0d-45a4-8db4-4575e396614b
-a = 3
+a = Inf
 
 # ╔═╡ 3435f07d-89b0-4f9b-b08f-2443d72c3ac6
 b = a * 2
 
 # ╔═╡ 55aa1f3b-cf36-4bc7-9c58-7cf45feafb47
 md"""
-Gimmicky example:
+## Gimmicky example:
 """
 
 # ╔═╡ 64af498f-cad1-4500-8ea5-e3b3bfdc1d86
-moonphases = '🌑':'🌘'
+moonphases = collect('🌑':'🌘')
 
 # ╔═╡ 2932fad6-78e0-4e57-b9be-b0e795f26c2a
 @bind clock PlutoUI.Slider(1:length(moonphases),show_value=true)
 #@bind clock PlutoUI.Clock(;start_running=false,interval=0.5)
 
 # ╔═╡ ccf8907a-bfe8-4cda-9c93-65c150c63753
-clock
+moonindex = clock
 
 # ╔═╡ f962030e-63be-49ba-b382-97be6620654a
-moonindex = Int(mod(clock,length(moonphases))+1)
+#moonindex = Int(mod(clock-1,length(moonphases))+1)
 
 # ╔═╡ e6cb58ee-6a3b-48de-9a0f-7bc09cc2c3ee
-@htl """
-<span style="font-size: 10rem;">$(moonphases[moonindex])</span>
-"""
+#@htl """<span style="font-size: 10rem;">$(moonphases[moonindex])</span>"""
 
 # ╔═╡ 765ce44e-73ed-484e-81f2-c68c23090372
 md"""
@@ -391,284 +439,6 @@ md"""
 **TLDR;** Give me your `Manifest.toml` and I can `instantiate` your exact state!
 """
 
-# ╔═╡ 1e9d739b-0a95-49e6-a489-4f2730799a5e
-md"""
-## Someone mentioned Julia is supposed to be fast?
-Let's compare `linear search`!
-
-is `3` included in `[5,2,5,1,2,3,7,5]`?
-
-| |naive | native |
-|---|---|:---|
-| R | for-loop | `in`|
-| Python | for-loop | `in`|
-| Julia | for-loop | `∈`  (or `in` 😉) ||
-
-[source of functions](https://towardsdatascience.com/r-vs-python-vs-julia-90456a2bcbab)
-"""
-
-# ╔═╡ 83e0de6d-948f-49a9-b027-1a11faf63e6e
-vec = range(1,1_000_000);
-
-# ╔═╡ 3cb07396-07be-404f-a09a-4de20a43af05
- x = 2_000_000;
-
-# ╔═╡ 7953f1cd-ee07-4013-8428-7f122e6e8b84
-begin # fancy way to move variables between R & Julia @rget + @rput
-	@rput x
-	@rput vec
-end;
-
-# ╔═╡ 51b2a265-a432-4ccb-8ecb-742737385dbd
-md"""
-##
-#### R naive
-with for-loops (we know this is bad)
-"""
-
-# ╔═╡ dd3d1812-0057-4407-9121-69925c3770df
-# R missing?
-
-# ╔═╡ 668347ff-0585-4169-8aab-94ee771a55ba
-md"""
-#### R inbuilt
-"""
-
-# ╔═╡ 1fca0668-c559-40d5-8345-7939a0dee9f2
-@time R"x %in% vec";
-
-# ╔═╡ b2b5a4e5-380b-400f-bfff-9384cf6ec429
-md"""
-#
-#### Python naive
-with for-loops (we know this is bad)
-"""
-
-# ╔═╡ b0be8b8a-db04-4765-af15-ca240987dc0e
-@time pyexec(Nothing,"""
-def for_search(vec, x):
-    for i in range(len(vec)):
-        if vec[i] == x:
-            return True
-    return False
-for_search(vec,x)
-""",Main,(vec=vec,x=x)
-)
-
-# ╔═╡ 4caaf820-b27d-4944-907d-76517c5afc23
-md"""
-## Julia naive
-"""
-
-# ╔═╡ b591ff2a-0e48-4a05-997e-56ec4a3b09b4
-function myfun(vec, x)
-  for i in 1:length(vec)
-    if vec[i] == x
-      return true
-  	end
-  end
-  return false
-end
-
-# ╔═╡ 014cec12-8e87-4ff1-a5a0-d25acc58bd4b
-md"""
-#
-#### Julia native
-"""
-
-# ╔═╡ 285e07eb-af83-4793-8981-4efdcb267be5
- realvec = collect(vec)
-
-# ╔═╡ 3f7d1bbd-fa2f-46e3-a535-8a46a068882a
-@time pyexec(@NamedTuple{answer::Bool},"""
-answer = x in vec
-""",Main,(vec=realvec,x=x)
-);
-
-# ╔═╡ d498a775-3c0c-49fe-8078-d4e00d97e142
-@time myfun(realvec,x);
-
-# ╔═╡ 6efc1438-c7af-4845-a4e8-493224d8c984
-@time  x ∈ realvec;
-
-# ╔═╡ cb4c24b0-245c-4aed-b34c-123234b45926
-PlutoTeachingTools.tip(md"The point is not that Julia is always faster - it is that it is easier to write fast code!")
-
-# ╔═╡ ca63b3f6-f303-4319-bec5-23e0e40df2ca
-md"""
-# 
-### Conclusion
-The `native` implementations of Python & Julia of this simple operation are optimized and similarly fast, R ~3x slower - but only in Julia can you use non-native code (for loops) and be fast at the same time)!
-"""
-
-
-# ╔═╡ ea2ec924-ae59-4522-9f80-fd689b6fcad2
-md"""
-[Daniel Moura wrote a very nice blog post on this](https://towardsdatascience.com/r-vs-python-vs-julia-90456a2bcbab) 
-
-![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*OH_n58xfBC7HSP2U8ZC1GQ.png)
-
-"""
-
-# ╔═╡ 090d4e9d-fec4-4a26-91d2-43719434c52e
-md"""
-## But why is it faster?
-In julia, everything has a `type` - (built-in types are not special, you can build your own + gain same speed increases!!)
-"""
-
-# ╔═╡ f548d4d0-2e1a-4183-98b3-bb1d3609b130
-typeof(1.0)
-
-# ╔═╡ 0f61b1e9-91bf-4117-bd58-2c3f0a2a971a
-c = [1  2   3;
-	 3. 2.3 1;
-	 π  ℯ   im]; typeof(c)
-
-# ╔═╡ 2e3e387a-6285-4fa4-bf8f-51136bc80a33
-md"""
-#
-### "Multiple-dispatch"
-Julia has a special (optimized) function for everything!
-
-e.g. for the subtraction `-` operator:
-"""
-
-# ╔═╡ 4c826ae7-0a07-42d9-affc-abc3aedd056a
-methods(-)[1:5]
-
-# ╔═╡ bfb4421b-9dd6-4f71-8a84-e0f10b3c761f
-@which 1 + 3
-
-# ╔═╡ 93942f8f-5814-4577-b0f6-ff3a7673f891
-@which 1.0 + 3.0
-
-# ╔═╡ 9cd4b914-ac50-4648-805f-0731210ab4dd
-# ╠═╡ disabled = true
-#=╠═╡
-a = '🌻'
-  ╠═╡ =#
-
-# ╔═╡ f1a483bc-a23a-4531-ae74-ca481b26c21a
-print(a)
-
-# ╔═╡ 76555f0e-7993-44b1-bedd-2aadee0e9fab
-#print(a+1);
-
-# ╔═╡ b9891739-ed09-4257-aa3e-990c934b0c45
-begin
-
-struct Circle
-	radius::Float64
-end
-circumference(c::Circle) = 2*pi*c.radius
-circle1 = Circle(4)
-
-circumference(circle1)
-
-end
-
-# ╔═╡ 31e4ce80-6b26-45de-b7ce-6014cb968d75
-md"""
-#
-### Just-In-Time (JIT) compilation
-"""
-
-# ╔═╡ 62171934-6878-4d2b-b30c-e26cb09f902f
-md"""
-Let's look what Julia is doing with it's code
-
-[Source: TestSubjector](https://testsubjector.github.io/blog/2020/03/26/The-Julia-Compilation-Process)
-"""
-
-# ╔═╡ bf4673c5-8468-4862-b95b-73e400bf92c6
-pos(x) = x < 0 ? 0 : x
-
-# ╔═╡ 28d1cef2-f4fb-45e6-8529-8a5621a0e880
-@code_lowered pos(1)
-
-# ╔═╡ 4b1a0c66-1397-4890-a30a-fdb1174b9af1
-@code_typed pos(1)
-
-# ╔═╡ f041e0a3-925f-4960-945f-6901578c6583
-md"""
-#
-### Messing up the type-system makes Julia slow(er)
-"""
-
-# ╔═╡ 52d9e568-6a2a-43b1-87b1-b974f26d8876
-begin
-vec_bad = Array{Any}(undef,size(vec))
-vec_bad .= vec
-typeof(vec_bad)
-end
-
-# ╔═╡ 60bff96b-91aa-4468-96e2-165e0f2e3aba
-@time myfun(vec_bad,x);
-
-# ╔═╡ f1283953-b999-4e67-b21c-a2bd5e3234e1
-@time myfun(vec,x);
-
-# ╔═╡ f31c3252-3080-4450-8ee0-05429cb3397b
-md"""
-## Why Julia is fast: Operator-fusion
-[Source: Julia Blog 2017](https://julialang.org/blog/2017/01/moredots/)
-
-Imagine:
-```julia
-f(A) = 3*A^2 + (5*A^3 - sqrt(A))
-# with 
-y = f([1,2,3,4])
-```
-
-In most programming languages, we need a lot of temporary arrays to solve this - assuming single operations are already vectorized
-```
-tmp1 = A^2
-tmp2 = 3*tmp1
-tmp3 = A^3
-tmp4 = 5*tmp3
-tmp5 = sqrt(A)
-tmp6 = tmp4 - tmp5
-x = tmp2 + tmp6
-```
-
-
-
-
-"""
-
-# ╔═╡ d7a0eace-e3c7-41b2-ae2f-9bce5cc7c94a
-md"""
-#
-In Julia, the different code-optimization steps do something funny:
-
-if you provide a `broadcasted` - that is - a function with `.`-operators:
-```julia
-y =  3 .* x.^2 .+ 4 .* x .+ 7 .* x.^3;
-```
-
-instead of allocating temporary arrays, it translates it back into a for-loop
-```julia
-for i in eachindex(A)
-    x = A[i]
-    X[i] = 3*x^2 + 4*x + 7*x^3
-end
-```
-"""
-
-# ╔═╡ 0151d20c-ba1c-42e3-a8fc-e2ee2f5779da
-begin
-f(x) =  3x.^2 + 4x + 7x.^3;
-fdot(x) =  3 .* x.^2 .+ 4 .* x .+ 7 .* x.^3; # use @. 3x^2 + (5x^3 - sqrt(x))
-end
-
-# ╔═╡ a3e4a275-1c43-4e99-9926-8573272d4d98
-let
-x = rand(10^6);
-@time f(x);
-@time fdot(x);
-@time f.(x)
-end;
-
 # ╔═╡ 2d14b423-38d1-424f-85a9-8382708b5703
 md"""
 # Package showcase
@@ -722,8 +492,14 @@ E.g. here are plottet 60.000k datapoints
 
 # ╔═╡ 98b14086-bc8c-4725-bf46-8e09f698c2f0
 md"""
-## Layouting in Makie
-With a focus on publication-ready plots
+### Layouting in Makie
+Layouting multiple subplots in Makie is really nice. Some (random) features I like:
+- no need to prespecify how many subplots you will have
+- dynamic subplots: `f[2,3][1,2]` puts a subplot in the right half of the `2,3` subplot 
+- you can choose where the plots should align (x-label bottom? plot bottom?)
+- you can add small labels (e.g. **A**,**B**,**C**)
+- you can use $\LaTeX$ wherever you want, 
+- adjust plots after the fact & replot
 """
 
 # ╔═╡ 31ae04fd-ed82-43bb-b16b-9eb8064060aa
@@ -798,19 +574,19 @@ taskstatus = "💤"
 t = @task begin
 	sleep(2); taskstatus = "Done 🎉!";
 end
-schedule(t) # start the task
+#schedule(t) # start the task
 	
-println("Let's do something in between (Task: $taskstatus)")
-sleep(1)
-println("Puh.. that tasks takes ages... is it ready? (Task: $taskstatus)")
-sleep(1)
-println("Now Done? (Task: $taskstatus)")
+#println("Let's do something in between (Task: $taskstatus)")
+#sleep(1)
+#println("Puh.. that tasks takes ages... is it ready? (Task: $taskstatus)")
+#sleep(1)
+#println("Now Done? (Task: $taskstatus)")
 	
 end
 
 # ╔═╡ 110d3a52-bd9a-47f3-8246-064ab1a15bfd
 md"""
-### 2. Threads
+## 2. Threads
 - Multi-CPU/Thread
 - shared memory
 """
@@ -825,30 +601,38 @@ end
 a
 end
 
-# ╔═╡ 3ea35338-0f95-4f9e-9daf-f7db5e7bad4d
-nTimes = 1_000
+# ╔═╡ 777cc42b-aa3c-4c07-a0b6-b33d265f7c98
+md"""
+## 
+"""
 
-# ╔═╡ 785678a8-6590-43fd-bb32-d8f10859f48f
-@time let
-a = fill(0.,nTimes)
-Threads.@threads for i = 1:nTimes
-		   a[i] = sum(rand(10000))
-end
-sum(a)
-end
+# ╔═╡ 3ea35338-0f95-4f9e-9daf-f7db5e7bad4d
+nTimes = 1_000_000
+
+# ╔═╡ 59c12b90-8fe7-4d02-887d-99f82109cdcc
+fun() = sum(rand(10000))
 
 # ╔═╡ 595944a9-152a-4877-ad74-a75cbdfe7e9f
 @time let
 a = fill(0.,nTimes)
 for i = 1:nTimes
-   	a[i] = sum(rand(10000))
+   	a[i] = fun()
+end
+sum(a)
+end
+
+# ╔═╡ 785678a8-6590-43fd-bb32-d8f10859f48f
+@time let
+a = fill(0.,nTimes)
+Threads.@threads for i = 1:nTimes
+		   a[i] = fun()
 end
 sum(a)
 end
 
 # ╔═╡ cb3738f3-a46b-4533-9a58-d35b97012794
 md"""
-### 3. Distributed.jl
+## 3. Distributed.jl
 - Each **process** has its own memory
 - workers could be on different machines
 
@@ -858,7 +642,7 @@ Can't showcase within Pluto right now!
 
 # ╔═╡ 545fcee8-d741-41ea-a14a-2e334427fa82
 md"""
-### Julia GPU
+## Julia GPU
 ![](https://juliagpu.org/assets/logo_crop.png)
 - CUDA.jl
 - oneApi.jl
@@ -891,19 +675,20 @@ md"""
 
 # ╔═╡ 54b8147e-355b-46da-929a-0ac8b1979d68
 md"""
-## Bayesian datanalysis with Turing.jl
+## Bayesian data analysis with Turing.jl
 Also supports autodiff, thus you can introduce **weird** models and functions!
 """
 
 # ╔═╡ 455b8f56-3f09-4c00-9c77-4e396f19709c
-weird(x) = x;
-#weird(x) = x>0 ? x+5 : x # make the modelfit worse for any m > 0;
+#weird(x) = x;
+weird(x) = x>0 ? x+10 : x # make the modelfit worse for any m > 0;
 
 # ╔═╡ fed19876-0b3a-48d4-8152-0ff6e3224b4e
 begin 
 	@model function gdemo(x, y)
     s² ~ InverseGamma(2, 3)
     m ~ Normal(0, sqrt(s²))
+		
     x ~ Normal(m, sqrt(s²))
     return y ~ Normal(weird(m), sqrt(s²))
 end
@@ -916,6 +701,9 @@ begin
 	chn = sample(init_model, NUTS(), 1000);
 end;
 
+# ╔═╡ 0d06817a-cc68-4b16-a853-627e2f582e6e
+
+
 # ╔═╡ 9e0675fd-a898-4c3f-9a11-3774329983ae
 hist(DataFrame(chn)[:,"m"],bins=100)
 
@@ -923,6 +711,277 @@ hist(DataFrame(chn)[:,"m"],bins=100)
 md"""
 ### Flux.jl
 """
+
+# ╔═╡ 1e9d739b-0a95-49e6-a489-4f2730799a5e
+md"""
+# Someone mentioned Julia is supposed to be fast?
+Let's compare `linear search`!
+
+is `3` included in `[5,2,5,1,2,3,7,5]`?
+
+| |naive | native |
+|---|---|:---|
+| R | for-loop | `in`|
+| Python | for-loop | `in`|
+| Julia | for-loop | `∈`  (or `in` 😉) ||
+
+[source of functions](https://towardsdatascience.com/r-vs-python-vs-julia-90456a2bcbab)
+"""
+
+# ╔═╡ 83e0de6d-948f-49a9-b027-1a11faf63e6e
+vec = collect(range(1,1_000_000));
+
+# ╔═╡ 3cb07396-07be-404f-a09a-4de20a43af05
+ x = 2_000_000;
+
+# ╔═╡ feb1b91a-dcbb-458d-aa0e-58a21a926ad0
+md"""
+## Compare with R
+"""
+
+# ╔═╡ 7953f1cd-ee07-4013-8428-7f122e6e8b84
+begin # fancy way to move variables between R & Julia @rget + @rput
+	@rput x
+	@rput vec
+end;
+
+# ╔═╡ 51b2a265-a432-4ccb-8ecb-742737385dbd
+md"""
+### R naive
+with for-loops (we know this is bad)
+"""
+
+# ╔═╡ dd3d1812-0057-4407-9121-69925c3770df
+# R missing?
+
+# ╔═╡ 668347ff-0585-4169-8aab-94ee771a55ba
+md"""
+### R inbuilt
+"""
+
+# ╔═╡ 1fca0668-c559-40d5-8345-7939a0dee9f2
+@time R"x %in% vec";
+
+# ╔═╡ b2b5a4e5-380b-400f-bfff-9384cf6ec429
+md"""
+## Compare with Python
+### Python naive
+with for-loops (we know this is bad)
+"""
+
+# ╔═╡ b0be8b8a-db04-4765-af15-ca240987dc0e
+@time pyexec(Nothing,"""
+def for_search(vec, x):
+    for i in range(len(vec)):
+        if vec[i] == x:
+            return True
+    return False
+for_search(vec,x)
+""",Main,(vec=vec,x=x)
+)
+
+# ╔═╡ 87745186-2f63-45ef-91e2-b6d757688948
+md"""
+### Python inbuilt
+"""
+
+# ╔═╡ 3f7d1bbd-fa2f-46e3-a535-8a46a068882a
+@time pyexec(@NamedTuple{answer::Bool},"""
+answer = x in vec
+""",Main,(vec=realvec,x=x)
+);
+
+# ╔═╡ 4caaf820-b27d-4944-907d-76517c5afc23
+md"""
+## Compare with Julia
+### Julia naive
+"""
+
+# ╔═╡ b591ff2a-0e48-4a05-997e-56ec4a3b09b4
+function myfun(vec, x)
+  for i in 1:length(vec)
+    if vec[i] == x
+      return true
+  	end
+  end
+  return false
+end
+
+# ╔═╡ d498a775-3c0c-49fe-8078-d4e00d97e142
+@time myfun(vec,x);
+
+# ╔═╡ 014cec12-8e87-4ff1-a5a0-d25acc58bd4b
+md"""
+### Julia native
+"""
+
+# ╔═╡ 6efc1438-c7af-4845-a4e8-493224d8c984
+@time  x ∈ vec;
+
+# ╔═╡ cb4c24b0-245c-4aed-b34c-123234b45926
+PlutoTeachingTools.tip(md"The point is not that Julia is always faster - it is that it is easier to write fast code!")
+
+# ╔═╡ ca63b3f6-f303-4319-bec5-23e0e40df2ca
+md"""
+## Conclusion
+The `native` implementations of Python & Julia of this simple operation are optimized and similarly fast, R ~3x slower - but only in Julia can you use non-native code (for loops) and be fast at the same time)!
+"""
+
+
+# ╔═╡ ea2ec924-ae59-4522-9f80-fd689b6fcad2
+md"""
+[Daniel Moura wrote a very nice blog post on this](https://towardsdatascience.com/r-vs-python-vs-julia-90456a2bcbab) 
+
+![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*OH_n58xfBC7HSP2U8ZC1GQ.png)
+
+"""
+
+# ╔═╡ 090d4e9d-fec4-4a26-91d2-43719434c52e
+md"""
+# But why is it faster?
+In julia, everything has a `type` - (built-in types are not special, you can build your own + gain same speed increases!!)
+"""
+
+# ╔═╡ f548d4d0-2e1a-4183-98b3-bb1d3609b130
+typeof(1.0)
+
+# ╔═╡ 0f61b1e9-91bf-4117-bd58-2c3f0a2a971a
+c = [1  2   3;
+	 3. 2.3 1;
+	 π  ℯ   im]; typeof(c)
+
+# ╔═╡ 2e3e387a-6285-4fa4-bf8f-51136bc80a33
+md"""
+## "Multiple-dispatch"
+Julia has a special (optimized) function for everything!
+
+e.g. for the subtraction `-` operator:
+"""
+
+# ╔═╡ 4c826ae7-0a07-42d9-affc-abc3aedd056a
+methods(-)[1:5]
+
+# ╔═╡ bfb4421b-9dd6-4f71-8a84-e0f10b3c761f
+@which 1 + 3
+
+# ╔═╡ 93942f8f-5814-4577-b0f6-ff3a7673f891
+@which 1.0 + 3.0
+
+# ╔═╡ 9cd4b914-ac50-4648-805f-0731210ab4dd
+t = '🌻'
+
+# ╔═╡ b9891739-ed09-4257-aa3e-990c934b0c45
+begin
+
+struct Circle
+	radius::Float64
+end
+circumference(c::Circle) = 2*pi*c.radius
+circle1 = Circle(4)
+
+circumference(circle1)
+
+end
+
+# ╔═╡ 31e4ce80-6b26-45de-b7ce-6014cb968d75
+md"""
+## Just-In-Time (JIT) compilation
+"""
+
+# ╔═╡ 62171934-6878-4d2b-b30c-e26cb09f902f
+md"""
+Let's look what Julia is doing with it's code
+
+[Source: TestSubjector](https://testsubjector.github.io/blog/2020/03/26/The-Julia-Compilation-Process)
+"""
+
+# ╔═╡ bf4673c5-8468-4862-b95b-73e400bf92c6
+pos(x) = x < 0 ? 0 : x
+
+# ╔═╡ 28d1cef2-f4fb-45e6-8529-8a5621a0e880
+@code_lowered pos(1)
+
+# ╔═╡ 4b1a0c66-1397-4890-a30a-fdb1174b9af1
+@code_typed pos(1)
+
+# ╔═╡ f31c3252-3080-4450-8ee0-05429cb3397b
+md"""
+## Why Julia is fast: Operator-fusion
+[Source: Julia Blog 2017](https://julialang.org/blog/2017/01/moredots/)
+
+Imagine:
+```julia
+f(A) = 3*A^2 + (5*A^3 - sqrt(A))
+# with 
+y = f([1,2,3,4])
+```
+
+In most programming languages, we need a lot of temporary arrays to solve this - assuming single operations are already vectorized
+```
+tmp1 = A^2
+tmp2 = 3*tmp1
+tmp3 = A^3
+tmp4 = 5*tmp3
+tmp5 = sqrt(A)
+tmp6 = tmp4 - tmp5
+x = tmp2 + tmp6
+```
+
+
+
+
+"""
+
+# ╔═╡ d7a0eace-e3c7-41b2-ae2f-9bce5cc7c94a
+md"""
+#
+In Julia, the different code-optimization steps do something funny:
+
+if you provide a `broadcasted` - that is - a function with `.`-operators:
+```julia
+y =  3 .* x.^2 .+ 4 .* x .+ 7 .* x.^3;
+```
+
+instead of allocating temporary arrays, it translates it back into a for-loop
+```julia
+for i in eachindex(A)
+    x = A[i]
+    X[i] = 3*x^2 + 4*x + 7*x^3
+end
+```
+"""
+
+# ╔═╡ 0151d20c-ba1c-42e3-a8fc-e2ee2f5779da
+begin
+f(x) =  3x.^2 + 4x + 7x.^3;
+fdot(x) =  3 .* x.^2 .+ 4 .* x .+ 7 .* x.^3; # use @. 3x^2 + (5x^3 - sqrt(x))
+end
+
+# ╔═╡ a3e4a275-1c43-4e99-9926-8573272d4d98
+let
+x = rand(10^6);
+@time f(x);
+@time fdot(x);
+@time f.(x)
+end;
+
+# ╔═╡ f041e0a3-925f-4960-945f-6901578c6583
+md"""
+## Messing up the type-system makes Julia slow(er)
+"""
+
+# ╔═╡ 52d9e568-6a2a-43b1-87b1-b974f26d8876
+begin
+vec_bad = Array{Any}(undef,size(vec))
+vec_bad .= vec
+typeof(vec_bad)
+end
+
+# ╔═╡ 60bff96b-91aa-4468-96e2-165e0f2e3aba
+@time myfun(vec_bad,x);
+
+# ╔═╡ f1283953-b999-4e67-b21c-a2bd5e3234e1
+@time myfun(vec,x);
 
 # ╔═╡ e95ba453-1bed-49a0-8c8e-a42eb297a895
 md"""
@@ -944,6 +1003,7 @@ DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 PlutoReport = "ab5eb977-4f23-42a0-954d-2743fb6218c4"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -959,6 +1019,7 @@ DataFramesMeta = "~0.14.0"
 ForwardDiff = "~0.10.36"
 HTTP = "~1.9.14"
 Measurements = "~2.9.0"
+OrdinaryDiffEq = "~6.53.4"
 PlutoReport = "~0.4.0"
 PlutoTeachingTools = "~0.2.12"
 PlutoUI = "~0.7.51"
@@ -974,7 +1035,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "6077bf89088b08324bc95a745f641992b2213cc0"
+project_hash = "7a9bc06fbf9657db4610b6af7f38539df9c31b81"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f5c25e8a5b29b5e941b7408bc8cc79fea4d9ef9a"
@@ -1085,6 +1146,12 @@ version = "2.3.0"
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.1"
 
+[[deps.ArnoldiMethod]]
+deps = ["LinearAlgebra", "Random", "StaticArrays"]
+git-tree-sha1 = "62e51b39331de8911e4a7ff6f5aaf38a5f4cc0ae"
+uuid = "ec485272-7323-5ecc-a04f-4719b315124d"
+version = "0.2.0"
+
 [[deps.ArrayInterface]]
 deps = ["Adapt", "LinearAlgebra", "Requires", "SparseArrays", "SuiteSparse"]
 git-tree-sha1 = "f83ec24f76d4c8f525099b2ac475fc098138ec31"
@@ -1106,6 +1173,12 @@ version = "7.4.11"
     GPUArraysCore = "46192b85-c4d5-4398-a991-12ede77f4527"
     StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
     Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+
+[[deps.ArrayInterfaceCore]]
+deps = ["LinearAlgebra", "SnoopPrecompile", "SparseArrays", "SuiteSparse"]
+git-tree-sha1 = "e5f08b5689b1aad068e01751889f2f615c7db36d"
+uuid = "30b0a656-2188-435a-8636-2ec0e6a096e2"
+version = "0.1.29"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -1206,6 +1279,12 @@ git-tree-sha1 = "43b1a4a8f797c1cddadf60499a8a077d4af2cd2d"
 uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
 version = "0.1.7"
 
+[[deps.BitTwiddlingConvenienceFunctions]]
+deps = ["Static"]
+git-tree-sha1 = "0c5f81f47bbbcf4aea7b2959135713459170798b"
+uuid = "62783981-4cbd-42fc-bca8-16325de8dc4b"
+version = "0.1.5"
+
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "19a35467a82e236ff51bc17a3a44b69ef35185a2"
@@ -1216,6 +1295,12 @@ version = "1.0.8+0"
 git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 version = "0.4.2"
+
+[[deps.CPUSummary]]
+deps = ["CpuId", "IfElse", "PrecompileTools", "Static"]
+git-tree-sha1 = "89e0654ed8c7aebad6d5ad235d6242c2d737a928"
+uuid = "2a0fbf3d-bb9c-48f3-b0a9-814d99fd7ab9"
+version = "0.2.3"
 
 [[deps.CRC32c]]
 uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
@@ -1295,6 +1380,12 @@ weakdeps = ["InverseFunctions"]
 
     [deps.ChangesOfVariables.extensions]
     ChangesOfVariablesInverseFunctionsExt = "InverseFunctions"
+
+[[deps.CloseOpenIntervals]]
+deps = ["Static", "StaticArrayInterface"]
+git-tree-sha1 = "70232f82ffaab9dc52585e0dd043b5e0c6b714f1"
+uuid = "fb6a15b2-703c-40df-9091-08a04967cfa9"
+version = "0.1.12"
 
 [[deps.CodeTracking]]
 deps = ["InteractiveUtils", "UUIDs"]
@@ -1418,6 +1509,12 @@ git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
 
+[[deps.CpuId]]
+deps = ["Markdown"]
+git-tree-sha1 = "fcbb72b032692610bfbdb15018ac16a36cf2e406"
+uuid = "adafc99b-e345-5852-983c-f28acb93d879"
+version = "0.3.1"
+
 [[deps.Crayons]]
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
@@ -1482,6 +1579,34 @@ git-tree-sha1 = "80c3e8639e3353e5d2912fb3a1916b8455e2494b"
 uuid = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
 version = "0.4.0"
 
+[[deps.DiffEqBase]]
+deps = ["ArrayInterface", "ChainRulesCore", "DataStructures", "DocStringExtensions", "EnumX", "FastBroadcast", "ForwardDiff", "FunctionWrappers", "FunctionWrappersWrappers", "LinearAlgebra", "Logging", "Markdown", "MuladdMacro", "Parameters", "PreallocationTools", "Printf", "RecursiveArrayTools", "Reexport", "Requires", "SciMLBase", "SciMLOperators", "Setfield", "SparseArrays", "Static", "StaticArraysCore", "Statistics", "Tricks", "TruncatedStacktraces", "ZygoteRules"]
+git-tree-sha1 = "ed586656058844e48660c6d6fdb384e83afc50db"
+uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
+version = "6.128.0"
+
+    [deps.DiffEqBase.extensions]
+    DiffEqBaseDistributionsExt = "Distributions"
+    DiffEqBaseGeneralizedGeneratedExt = "GeneralizedGenerated"
+    DiffEqBaseMPIExt = "MPI"
+    DiffEqBaseMeasurementsExt = "Measurements"
+    DiffEqBaseMonteCarloMeasurementsExt = "MonteCarloMeasurements"
+    DiffEqBaseReverseDiffExt = "ReverseDiff"
+    DiffEqBaseTrackerExt = "Tracker"
+    DiffEqBaseUnitfulExt = "Unitful"
+    DiffEqBaseZygoteExt = "Zygote"
+
+    [deps.DiffEqBase.weakdeps]
+    Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+    GeneralizedGenerated = "6b9d7cbe-bcb9-11e9-073f-15a7a543e2eb"
+    MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
+    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    MonteCarloMeasurements = "0987c9cc-fe09-11e8-30f0-b96dd679fdca"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+    Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
 [[deps.DiffResults]]
 deps = ["StaticArraysCore"]
 git-tree-sha1 = "782dd5f4561f5d267313f23853baaaa4c52ea621"
@@ -1493,6 +1618,16 @@ deps = ["IrrationalConstants", "LogExpFunctions", "NaNMath", "Random", "SpecialF
 git-tree-sha1 = "23163d55f885173722d1e4cf0f6110cdbaf7e272"
 uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
 version = "1.15.1"
+
+[[deps.Distances]]
+deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "b6def76ffad15143924a2199f72a5cd883a2e8a9"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.9"
+weakdeps = ["SparseArrays"]
+
+    [deps.Distances.extensions]
+    DistancesSparseArraysExt = "SparseArrays"
 
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -1590,6 +1725,12 @@ git-tree-sha1 = "4558ab818dcceaab612d1bb8c19cee87eda2b83c"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.5.0+0"
 
+[[deps.ExponentialUtilities]]
+deps = ["Adapt", "ArrayInterface", "GPUArraysCore", "GenericSchur", "LinearAlgebra", "Printf", "SnoopPrecompile", "SparseArrays", "libblastrampoline_jll"]
+git-tree-sha1 = "fb7dbef7d2631e2d02c49e2750f7447648b0ec9b"
+uuid = "d4d017d3-3776-5f7e-afef-a10c40355c18"
+version = "1.24.0"
+
 [[deps.ExprTools]]
 git-tree-sha1 = "27415f162e6028e81c72b82ef756bf321213b6ec"
 uuid = "e2ba6199-217a-4e67-a87a-7c52f15ade04"
@@ -1623,6 +1764,23 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "c6033cc3892d0ef5bb9cd29b7f2f0331ea5184ea"
 uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
 version = "3.3.10+0"
+
+[[deps.FastBroadcast]]
+deps = ["ArrayInterface", "LinearAlgebra", "Polyester", "Static", "StaticArrayInterface", "StrideArraysCore"]
+git-tree-sha1 = "aa9925a229d45fe3018715238956766fa21804d1"
+uuid = "7034ab61-46d4-4ed7-9d0f-46aef9175898"
+version = "0.2.6"
+
+[[deps.FastClosures]]
+git-tree-sha1 = "acebe244d53ee1b461970f8910c235b259e772ef"
+uuid = "9aa1b823-49e4-5ca5-8b0f-3971ec8bab6a"
+version = "0.3.2"
+
+[[deps.FastLapackInterface]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "b12f05108e405dadcc2aff0008db7f831374e051"
+uuid = "29a986be-02c6-4525-aec4-84b980013641"
+version = "2.0.0"
 
 [[deps.FastRounding]]
 deps = ["ErrorfreeArithmetic", "LinearAlgebra"]
@@ -1740,6 +1898,12 @@ git-tree-sha1 = "2d6ca471a6c7b536127afccfa7564b5b39227fe0"
 uuid = "46192b85-c4d5-4398-a991-12ede77f4527"
 version = "0.1.5"
 
+[[deps.GenericSchur]]
+deps = ["LinearAlgebra", "Printf"]
+git-tree-sha1 = "fb69b2a645fa69ba5f474af09221b9308b160ce6"
+uuid = "c145ed77-6b09-5dd9-b285-bf645a82121e"
+version = "0.5.3"
+
 [[deps.GeoInterface]]
 deps = ["Extents"]
 git-tree-sha1 = "bb198ff907228523f3dee1070ceee63b9359b6ab"
@@ -1776,6 +1940,12 @@ git-tree-sha1 = "344bf40dcab1073aca04aa0df4fb092f920e4011"
 uuid = "3b182d85-2403-5c21-9c21-1e1f0cc25472"
 version = "1.3.14+0"
 
+[[deps.Graphs]]
+deps = ["ArnoldiMethod", "Compat", "DataStructures", "Distributed", "Inflate", "LinearAlgebra", "Random", "SharedArrays", "SimpleTraits", "SparseArrays", "Statistics"]
+git-tree-sha1 = "1cf1d7dcb4bc32d7b4a5add4232db3750c27ecb4"
+uuid = "86223c79-3864-5bf0-83f7-82e725a168b6"
+version = "1.8.0"
+
 [[deps.GridLayoutBase]]
 deps = ["GeometryBasics", "InteractiveUtils", "Observables"]
 git-tree-sha1 = "f57a64794b336d4990d90f80b147474b869b1bc4"
@@ -1798,6 +1968,12 @@ deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll",
 git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
+
+[[deps.HostCPUFeatures]]
+deps = ["BitTwiddlingConvenienceFunctions", "IfElse", "Libdl", "Static"]
+git-tree-sha1 = "eb8fed28f4994600e29beef49744639d985a04b2"
+uuid = "3e5b6fbb-0976-4d2c-9146-d79de83f2fb0"
+version = "0.1.16"
 
 [[deps.HypergeometricFunctions]]
 deps = ["DualNumbers", "LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
@@ -1822,6 +1998,11 @@ deps = ["Logging", "Random"]
 git-tree-sha1 = "d75853a0bdbfb1ac815478bacd89cd27b550ace6"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
 version = "0.2.3"
+
+[[deps.IfElse]]
+git-tree-sha1 = "debdd00ffef04665ccbb3e150747a77560e8fad1"
+uuid = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
+version = "0.1.1"
 
 [[deps.ImageAxes]]
 deps = ["AxisArrays", "ImageBase", "ImageCore", "Reexport", "SimpleTraits"]
@@ -1997,6 +2178,12 @@ git-tree-sha1 = "6a125e6a4cb391e0b9adbd1afa9e771c2179f8ef"
 uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
 version = "0.9.23"
 
+[[deps.KLU]]
+deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
+git-tree-sha1 = "764164ed65c30738750965d55652db9c94c59bfe"
+uuid = "ef3ab10e-7fda-4108-b977-705223b18434"
+version = "0.4.0"
+
 [[deps.KernelAbstractions]]
 deps = ["Adapt", "Atomix", "InteractiveUtils", "LinearAlgebra", "MacroTools", "PrecompileTools", "Requires", "SparseArrays", "StaticArrays", "UUIDs", "UnsafeAtomics", "UnsafeAtomicsLLVM"]
 git-tree-sha1 = "4c5875e4c228247e1c2b087669846941fb6e0118"
@@ -2014,6 +2201,12 @@ deps = ["Distributions", "DocStringExtensions", "FFTW", "Interpolations", "Stats
 git-tree-sha1 = "90442c50e202a5cdf21a7899c66b240fdef14035"
 uuid = "5ab0869b-81aa-558d-bb23-cbf5423bbe9b"
 version = "0.6.7"
+
+[[deps.Krylov]]
+deps = ["LinearAlgebra", "Printf", "SparseArrays"]
+git-tree-sha1 = "fbda7c58464204d92f3b158578fb0b3d4224cea5"
+uuid = "ba0b0d4f-ebba-5204-a429-3ac8c609bfb7"
+version = "0.9.3"
 
 [[deps.LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -2072,6 +2265,12 @@ version = "0.15.21"
     DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
     DiffEqBiological = "eb300fae-53e8-50a0-950c-e21f52c2b7e0"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+
+[[deps.LayoutPointers]]
+deps = ["ArrayInterface", "LinearAlgebra", "ManualMemory", "SIMDTypes", "Static", "StaticArrayInterface"]
+git-tree-sha1 = "88b8f66b604da079a627b6fb2860d3704a6729a1"
+uuid = "10f19ff3-798f-405d-979b-55457f8fc047"
+version = "0.1.14"
 
 [[deps.Lazy]]
 deps = ["MacroTools"]
@@ -2180,6 +2379,28 @@ git-tree-sha1 = "558a338f1eeabe933f9c2d4052aa7c2c707c3d52"
 uuid = "9b3f67b0-2d00-526e-9884-9e4938f8fb88"
 version = "0.1.12"
 
+[[deps.LinearSolve]]
+deps = ["ArrayInterface", "DocStringExtensions", "EnumX", "FastLapackInterface", "GPUArraysCore", "InteractiveUtils", "KLU", "Krylov", "Libdl", "LinearAlgebra", "PrecompileTools", "Preferences", "RecursiveFactorization", "Reexport", "Requires", "SciMLBase", "SciMLOperators", "Setfield", "SparseArrays", "Sparspak", "SuiteSparse", "UnPack"]
+git-tree-sha1 = "f746a5b9522815bf098049f9cbfbfcae53f29450"
+uuid = "7ed4a6bd-45f5-4d41-b270-4a48e9bafcae"
+version = "2.5.0"
+
+    [deps.LinearSolve.extensions]
+    LinearSolveCUDAExt = "CUDA"
+    LinearSolveHYPREExt = "HYPRE"
+    LinearSolveIterativeSolversExt = "IterativeSolvers"
+    LinearSolveKrylovKitExt = "KrylovKit"
+    LinearSolveMKLExt = "MKL_jll"
+    LinearSolvePardisoExt = "Pardiso"
+
+    [deps.LinearSolve.weakdeps]
+    CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    HYPRE = "b5ffcf37-a2bd-41ab-a3da-4bd9bc8ad771"
+    IterativeSolvers = "42fd0dbc-a981-5370-80f2-aaf504508153"
+    KrylovKit = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"
+    MKL_jll = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
+    Pardiso = "46dd5b70-b6fb-5a00-ae2d-e8fea33afaf2"
+
 [[deps.LogDensityProblems]]
 deps = ["ArgCheck", "DocStringExtensions", "Random"]
 git-tree-sha1 = "f9a11237204bc137617194d79d813069838fcf61"
@@ -2233,6 +2454,17 @@ git-tree-sha1 = "cedb76b37bc5a6c702ade66be44f831fa23c681e"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 version = "1.0.0"
 
+[[deps.LoopVectorization]]
+deps = ["ArrayInterface", "ArrayInterfaceCore", "CPUSummary", "CloseOpenIntervals", "DocStringExtensions", "HostCPUFeatures", "IfElse", "LayoutPointers", "LinearAlgebra", "OffsetArrays", "PolyesterWeave", "PrecompileTools", "SIMDTypes", "SLEEFPirates", "Static", "StaticArrayInterface", "ThreadingUtilities", "UnPack", "VectorizationBase"]
+git-tree-sha1 = "c88a4afe1703d731b1c4fdf4e3c7e77e3b176ea2"
+uuid = "bdcacae8-1622-11e9-2a5c-532679323890"
+version = "0.12.165"
+weakdeps = ["ChainRulesCore", "ForwardDiff", "SpecialFunctions"]
+
+    [deps.LoopVectorization.extensions]
+    ForwardDiffExt = ["ChainRulesCore", "ForwardDiff"]
+    SpecialFunctionsExt = "SpecialFunctions"
+
 [[deps.LoweredCodeUtils]]
 deps = ["JuliaInterpreter"]
 git-tree-sha1 = "60168780555f3e663c536500aa790b6368adc02a"
@@ -2285,6 +2517,11 @@ deps = ["Observables"]
 git-tree-sha1 = "87a85ff81583bd392642869557cb633532989517"
 uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
 version = "0.6.4"
+
+[[deps.ManualMemory]]
+git-tree-sha1 = "bcaef4fc7a0cfe2cba636d84cda54b5e4e4ca3cd"
+uuid = "d125e4d3-2237-4719-b19c-fa641b8a4667"
+version = "0.1.8"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
@@ -2359,6 +2596,11 @@ version = "0.3.4"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2022.10.11"
 
+[[deps.MuladdMacro]]
+git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
+uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
+version = "0.2.4"
+
 [[deps.Multisets]]
 git-tree-sha1 = "8d852646862c96e226367ad10c8af56099b4047e"
 uuid = "3b2b4ff1-bcff-5658-a3ee-dbcf1ce5ac09"
@@ -2369,6 +2611,12 @@ deps = ["DiffResults", "Distributed", "FiniteDiff", "ForwardDiff"]
 git-tree-sha1 = "a0b464d183da839699f4c79e7606d9d186ec172c"
 uuid = "d41bc354-129a-5804-8e4c-c37616107c6c"
 version = "7.8.3"
+
+[[deps.NLsolve]]
+deps = ["Distances", "LineSearches", "LinearAlgebra", "NLSolversBase", "Printf", "Reexport"]
+git-tree-sha1 = "019f12e9a1a7880459d0173c182e6a99365d7ac1"
+uuid = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
+version = "4.5.1"
 
 [[deps.NNlib]]
 deps = ["Adapt", "Atomix", "ChainRulesCore", "GPUArraysCore", "KernelAbstractions", "LinearAlgebra", "Pkg", "Random", "Requires", "Statistics"]
@@ -2412,6 +2660,12 @@ version = "1.1.1"
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
+
+[[deps.NonlinearSolve]]
+deps = ["ArrayInterface", "DiffEqBase", "EnumX", "FiniteDiff", "ForwardDiff", "LinearAlgebra", "LinearSolve", "PrecompileTools", "RecursiveArrayTools", "Reexport", "SciMLBase", "SimpleNonlinearSolve", "SparseArrays", "SparseDiffTools", "StaticArraysCore", "UnPack"]
+git-tree-sha1 = "23dabe80f8ebec9a68b0db4cd02f2d2cdbc4f653"
+uuid = "8913a72c-1f9b-4ce2-8d82-65094dcecaec"
+version = "1.9.0"
 
 [[deps.Observables]]
 git-tree-sha1 = "6862738f9796b3edc1c09d0890afce4eca9e7e93"
@@ -2493,6 +2747,12 @@ git-tree-sha1 = "2e73fe17cac3c62ad1aebe70d44c963c3cfdc3e3"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.6.2"
 
+[[deps.OrdinaryDiffEq]]
+deps = ["ADTypes", "Adapt", "ArrayInterface", "DataStructures", "DiffEqBase", "DocStringExtensions", "ExponentialUtilities", "FastBroadcast", "FastClosures", "FiniteDiff", "ForwardDiff", "FunctionWrappersWrappers", "IfElse", "InteractiveUtils", "LineSearches", "LinearAlgebra", "LinearSolve", "Logging", "LoopVectorization", "MacroTools", "MuladdMacro", "NLsolve", "NonlinearSolve", "Polyester", "PreallocationTools", "PrecompileTools", "Preferences", "RecursiveArrayTools", "Reexport", "SciMLBase", "SciMLNLSolve", "SciMLOperators", "SimpleNonlinearSolve", "SimpleUnPack", "SparseArrays", "SparseDiffTools", "StaticArrayInterface", "StaticArrays", "TruncatedStacktraces"]
+git-tree-sha1 = "47c560dcb059570bdbd9f887a6b8958190e498a4"
+uuid = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+version = "6.53.4"
+
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
@@ -2509,6 +2769,12 @@ deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpn
 git-tree-sha1 = "9b02b27ac477cad98114584ff964e3052f656a0f"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
 version = "0.4.0"
+
+[[deps.PackageExtensionCompat]]
+git-tree-sha1 = "f9b1e033c2b1205cf30fd119f4e50881316c1923"
+uuid = "65ce6f38-6b18-4e1d-a461-8949797d7930"
+version = "1.0.1"
+weakdeps = ["Requires", "TOML"]
 
 [[deps.Packing]]
 deps = ["GeometryBasics"]
@@ -2605,6 +2871,18 @@ git-tree-sha1 = "e47cd150dbe0443c3a3651bc5b9cbd5576ab75b7"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 version = "0.7.52"
 
+[[deps.Polyester]]
+deps = ["ArrayInterface", "BitTwiddlingConvenienceFunctions", "CPUSummary", "IfElse", "ManualMemory", "PolyesterWeave", "Requires", "Static", "StaticArrayInterface", "StrideArraysCore", "ThreadingUtilities"]
+git-tree-sha1 = "3d811babe092a6e7b130beee84998fe7663348b6"
+uuid = "f517fe37-dbe3-4b94-8317-1923a5111588"
+version = "0.7.5"
+
+[[deps.PolyesterWeave]]
+deps = ["BitTwiddlingConvenienceFunctions", "CPUSummary", "IfElse", "Static", "ThreadingUtilities"]
+git-tree-sha1 = "240d7170f5ffdb285f9427b92333c3463bf65bf6"
+uuid = "1d0040c9-8b98-4ee7-8388-3f51789ca0ad"
+version = "0.2.1"
+
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
@@ -2637,6 +2915,18 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "17275485f373e6673f7e7f97051f703ed5b15b20"
 uuid = "85a6dd25-e78a-55b7-8502-1745935b8125"
 version = "0.2.4"
+
+[[deps.PreallocationTools]]
+deps = ["Adapt", "ArrayInterface", "ForwardDiff", "Requires"]
+git-tree-sha1 = "f739b1b3cc7b9949af3b35089931f2b58c289163"
+uuid = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
+version = "0.4.12"
+
+    [deps.PreallocationTools.extensions]
+    PreallocationToolsReverseDiffExt = "ReverseDiff"
+
+    [deps.PreallocationTools.weakdeps]
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -2765,6 +3055,12 @@ version = "2.38.7"
     Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
     Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
+[[deps.RecursiveFactorization]]
+deps = ["LinearAlgebra", "LoopVectorization", "Polyester", "PrecompileTools", "StrideArraysCore", "TriangularSolve"]
+git-tree-sha1 = "2b6d4a40339aa02655b1743f4cd7c03109f520c1"
+uuid = "f2c3362d-daeb-58d1-803e-2bc74f2840b4"
+version = "0.2.20"
+
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -2837,11 +3133,28 @@ version = "0.5.12"
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
 
+[[deps.SIMDTypes]]
+git-tree-sha1 = "330289636fb8107c5f32088d2741e9fd7a061a5c"
+uuid = "94e857df-77ce-4151-89e5-788b33177be4"
+version = "0.1.0"
+
+[[deps.SLEEFPirates]]
+deps = ["IfElse", "Static", "VectorizationBase"]
+git-tree-sha1 = "4b8586aece42bee682399c4c4aee95446aa5cd19"
+uuid = "476501e8-09a2-5ece-8869-fb82de89a1fa"
+version = "0.6.39"
+
 [[deps.SciMLBase]]
 deps = ["ADTypes", "ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "PrecompileTools", "Preferences", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLOperators", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables", "TruncatedStacktraces"]
 git-tree-sha1 = "04370090604cd399db5bebddb636d80ab9d338e9"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 version = "1.94.0"
+
+[[deps.SciMLNLSolve]]
+deps = ["DiffEqBase", "LineSearches", "NLsolve", "Reexport", "SciMLBase"]
+git-tree-sha1 = "9dfc8e9e3d58c0c74f1a821c762b5349da13eccf"
+uuid = "e9a6253c-8580-4d32-9898-8661bb511710"
+version = "0.1.8"
 
 [[deps.SciMLOperators]]
 deps = ["ArrayInterface", "DocStringExtensions", "Lazy", "LinearAlgebra", "Setfield", "SparseArrays", "StaticArraysCore", "Tricks"]
@@ -2918,6 +3231,16 @@ git-tree-sha1 = "b608903049d11cc557c45e03b3a53e9260579c19"
 uuid = "55797a34-41de-5266-9ec1-32ac4eb504d3"
 version = "0.8.4"
 
+[[deps.SimpleNonlinearSolve]]
+deps = ["ArrayInterface", "DiffEqBase", "FiniteDiff", "ForwardDiff", "LinearAlgebra", "PackageExtensionCompat", "PrecompileTools", "Reexport", "SciMLBase", "StaticArraysCore"]
+git-tree-sha1 = "20aa9831d654bab67ed561e78917047143ecb9bf"
+uuid = "727e6d20-b764-4bd8-a329-72de5adea6c7"
+version = "0.1.19"
+weakdeps = ["NNlib"]
+
+    [deps.SimpleNonlinearSolve.extensions]
+    SimpleNonlinearSolveNNlibExt = "NNlib"
+
 [[deps.SimplePartitions]]
 deps = ["AbstractLattices", "DataStructures", "Permutations"]
 git-tree-sha1 = "dcc02923a53f316ab97da8ef3136e80b4543dbf1"
@@ -2953,6 +3276,12 @@ git-tree-sha1 = "2da10356e31327c7096832eb9cd86307a50b1eb6"
 uuid = "45858cf5-a6b0-47a3-bbea-62219f50df47"
 version = "0.1.3"
 
+[[deps.SnoopPrecompile]]
+deps = ["Preferences"]
+git-tree-sha1 = "e760a70afdcd461cf01a575947738d359234665c"
+uuid = "66db9d55-30c0-4569-8b51-7e840670fc0c"
+version = "1.0.3"
+
 [[deps.Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
@@ -2965,6 +3294,24 @@ version = "1.1.1"
 [[deps.SparseArrays]]
 deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[[deps.SparseDiffTools]]
+deps = ["ADTypes", "Adapt", "ArrayInterface", "Compat", "DataStructures", "FiniteDiff", "ForwardDiff", "Graphs", "LinearAlgebra", "Reexport", "Requires", "SciMLOperators", "Setfield", "SparseArrays", "StaticArrayInterface", "StaticArrays", "Tricks", "VertexSafeGraphs"]
+git-tree-sha1 = "4c1a57bcbc0b795fbfdc2009e70f9c2fd2815bfe"
+uuid = "47a9eef4-7e08-11e9-0b38-333d64bd3804"
+version = "2.4.1"
+
+    [deps.SparseDiffTools.extensions]
+    SparseDiffToolsZygoteExt = "Zygote"
+
+    [deps.SparseDiffTools.weakdeps]
+    Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
+[[deps.Sparspak]]
+deps = ["Libdl", "LinearAlgebra", "Logging", "OffsetArrays", "Printf", "SparseArrays", "Test"]
+git-tree-sha1 = "342cf4b449c299d8d1ceaf00b7a49f4fbc7940e7"
+uuid = "e56a9233-b9d6-4f03-8d0f-1825330902ac"
+version = "0.3.9"
 
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
@@ -2993,6 +3340,23 @@ deps = ["OffsetArrays"]
 git-tree-sha1 = "46e589465204cd0c08b4bd97385e4fa79a0c770c"
 uuid = "cae243ae-269e-4f55-b966-ac2d0dc13c15"
 version = "0.1.1"
+
+[[deps.Static]]
+deps = ["IfElse"]
+git-tree-sha1 = "f295e0a1da4ca425659c57441bcb59abb035a4bc"
+uuid = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
+version = "0.8.8"
+
+[[deps.StaticArrayInterface]]
+deps = ["ArrayInterface", "Compat", "IfElse", "LinearAlgebra", "Requires", "SnoopPrecompile", "SparseArrays", "Static", "SuiteSparse"]
+git-tree-sha1 = "33040351d2403b84afce74dae2e22d3f5b18edcb"
+uuid = "0d7ed370-da01-4f52-bd93-41d350b8b718"
+version = "1.4.0"
+weakdeps = ["OffsetArrays", "StaticArrays"]
+
+    [deps.StaticArrayInterface.extensions]
+    StaticArrayInterfaceOffsetArraysExt = "OffsetArrays"
+    StaticArrayInterfaceStaticArraysExt = "StaticArrays"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "Random", "StaticArraysCore"]
@@ -3048,6 +3412,12 @@ deps = ["DataAPI", "DataStructures", "LinearAlgebra", "Printf", "REPL", "Shifted
 git-tree-sha1 = "8cc7a5385ecaa420f0b3426f9b0135d0df0638ed"
 uuid = "3eaba693-59b7-5ba5-a881-562e759f1c8d"
 version = "0.7.2"
+
+[[deps.StrideArraysCore]]
+deps = ["ArrayInterface", "CloseOpenIntervals", "IfElse", "LayoutPointers", "ManualMemory", "SIMDTypes", "Static", "StaticArrayInterface", "ThreadingUtilities"]
+git-tree-sha1 = "f02eb61eb5c97b48c153861c72fbbfdddc607e06"
+uuid = "7792a7ef-975c-4747-a70f-980b88e8d1da"
+version = "0.4.17"
 
 [[deps.StringEncodings]]
 deps = ["Libiconv_jll"]
@@ -3125,6 +3495,12 @@ version = "0.1.7"
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
+[[deps.ThreadingUtilities]]
+deps = ["ManualMemory"]
+git-tree-sha1 = "eda08f7e9818eb53661b3deb74e3159460dfbc27"
+uuid = "8290d209-cae3-49c0-8002-c8c24d57dab5"
+version = "0.5.2"
+
 [[deps.TiffImages]]
 deps = ["ColorTypes", "DataStructures", "DocStringExtensions", "FileIO", "FixedPointNumbers", "IndirectArrays", "Inflate", "Mmap", "OffsetArrays", "PkgVersion", "ProgressMeter", "UUIDs"]
 git-tree-sha1 = "8621f5c499a8aa4aa970b1ae381aae0ef1576966"
@@ -3166,6 +3542,12 @@ version = "0.4.78"
     LazyArrays = "5078a376-72f3-5289-bfd5-ec5146d43c02"
     OnlineStatsBase = "925886fa-5bf2-5e8e-b522-a9147a512338"
     Referenceables = "42d2dcc6-99eb-4e98-b66c-637b7d73030e"
+
+[[deps.TriangularSolve]]
+deps = ["CloseOpenIntervals", "IfElse", "LayoutPointers", "LinearAlgebra", "LoopVectorization", "Polyester", "Static", "VectorizationBase"]
+git-tree-sha1 = "31eedbc0b6d07c08a700e26d31298ac27ef330eb"
+uuid = "d5829a12-d9aa-46ab-831f-fb7c9ab06edf"
+version = "0.1.19"
 
 [[deps.Tricks]]
 git-tree-sha1 = "aadb748be58b492045b4f56166b5188aa63ce549"
@@ -3252,10 +3634,22 @@ git-tree-sha1 = "c81331b3b2e60a982be57c046ec91f599ede674a"
 uuid = "e17b2a0c-0bdf-430a-bd0c-3a23cae4ff39"
 version = "1.0.0"
 
+[[deps.VectorizationBase]]
+deps = ["ArrayInterface", "CPUSummary", "HostCPUFeatures", "IfElse", "LayoutPointers", "Libdl", "LinearAlgebra", "SIMDTypes", "Static", "StaticArrayInterface"]
+git-tree-sha1 = "b182207d4af54ac64cbc71797765068fdeff475d"
+uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
+version = "0.21.64"
+
 [[deps.VersionParsing]]
 git-tree-sha1 = "58d6e80b4ee071f5efd07fda82cb9fbe17200868"
 uuid = "81def892-9a0e-5fdd-b105-ffc91e053289"
 version = "1.3.0"
+
+[[deps.VertexSafeGraphs]]
+deps = ["Graphs"]
+git-tree-sha1 = "8351f8d73d7e880bfc042a8b6922684ebeafb35c"
+uuid = "19fa3120-7c27-5ec5-8db8-b0b0aa330d6f"
+version = "0.2.0"
 
 [[deps.WinReg]]
 git-tree-sha1 = "cd910906b099402bcc50b3eafa9634244e5ec83b"
@@ -3428,14 +3822,21 @@ version = "3.5.0+0"
 # ╟─cc231b54-f34c-4349-b5de-479b60778bfc
 # ╟─8228c2d3-abd3-4e2d-824b-860f73c9f50f
 # ╟─b1947a54-cf7c-474a-8330-a35ad6a6df47
-# ╟─ed089865-5955-4bc3-b58e-bd5cde3072e5
+# ╟─56fc2f2d-e1d8-424c-a256-4b7b282dcf69
+# ╟─dd2816bc-230e-4c55-8903-5b817a0ea6d7
 # ╟─c5855931-4fe4-40bf-83c9-b100bc7f5900
 # ╟─d70cdceb-679b-4a92-b5c1-814d3a66b1b9
 # ╠═bbf8da5b-4974-4d78-a849-ad6afb28435c
 # ╠═a4b978d6-d395-4e49-8adf-578efab2a9d0
+# ╠═31c21f8e-09c7-4eaa-b5f6-fc2046f77b0a
+# ╠═968adac3-56eb-4ccd-b6a0-9bab802cce29
 # ╟─a3916666-7788-4716-8d6f-3ea75d9c6ad1
-# ╠═b5e5ba68-9cc1-4055-a4ca-aea54e7622f9
-# ╠═325a4eae-4fc1-41f2-aa4b-58d68e20c59f
+# ╠═c963e92f-9116-4ff8-a874-e3e25340e4ae
+# ╠═4399b11b-6814-4899-8f6a-12fd9549e3cf
+# ╠═a8575e86-a5f8-4743-bb15-1166a236431a
+# ╠═ff9c0134-2139-4ee6-b81e-5a4b34484619
+# ╠═4c13eeaf-f04b-46eb-bcea-771307f8ee1b
+# ╠═6c9967ee-2655-4015-81a1-377c46038629
 # ╟─18e627c6-3dca-4d6d-a825-5884c5541ffb
 # ╠═57e70c41-2f0d-45a4-8db4-4575e396614b
 # ╠═3435f07d-89b0-4f9b-b08f-2443d72c3ac6
@@ -3467,53 +3868,8 @@ version = "3.5.0+0"
 # ╟─d5caafd7-231e-4785-98b9-87d48bda363a
 # ╟─2bcc5531-cb51-4792-81d0-cc412baa7cd2
 # ╟─9e5935cf-920a-4726-b9a9-48f5c6b9b79c
-# ╟─1e9d739b-0a95-49e6-a489-4f2730799a5e
-# ╠═5706cf61-07da-460b-92af-a5d0e30ae67a
-# ╠═83e0de6d-948f-49a9-b027-1a11faf63e6e
-# ╠═3cb07396-07be-404f-a09a-4de20a43af05
-# ╠═7953f1cd-ee07-4013-8428-7f122e6e8b84
-# ╟─51b2a265-a432-4ccb-8ecb-742737385dbd
-# ╠═dd3d1812-0057-4407-9121-69925c3770df
-# ╟─668347ff-0585-4169-8aab-94ee771a55ba
-# ╠═1fca0668-c559-40d5-8345-7939a0dee9f2
-# ╟─b2b5a4e5-380b-400f-bfff-9384cf6ec429
-# ╠═b0be8b8a-db04-4765-af15-ca240987dc0e
-# ╠═3f7d1bbd-fa2f-46e3-a535-8a46a068882a
-# ╠═4caaf820-b27d-4944-907d-76517c5afc23
-# ╠═b591ff2a-0e48-4a05-997e-56ec4a3b09b4
-# ╠═d498a775-3c0c-49fe-8078-d4e00d97e142
-# ╠═014cec12-8e87-4ff1-a5a0-d25acc58bd4b
-# ╠═285e07eb-af83-4793-8981-4efdcb267be5
-# ╠═6efc1438-c7af-4845-a4e8-493224d8c984
-# ╠═cb4c24b0-245c-4aed-b34c-123234b45926
-# ╟─ca63b3f6-f303-4319-bec5-23e0e40df2ca
-# ╟─ea2ec924-ae59-4522-9f80-fd689b6fcad2
-# ╟─090d4e9d-fec4-4a26-91d2-43719434c52e
-# ╠═f548d4d0-2e1a-4183-98b3-bb1d3609b130
-# ╠═0f61b1e9-91bf-4117-bd58-2c3f0a2a971a
-# ╟─2e3e387a-6285-4fa4-bf8f-51136bc80a33
-# ╠═4c826ae7-0a07-42d9-affc-abc3aedd056a
-# ╠═bfb4421b-9dd6-4f71-8a84-e0f10b3c761f
-# ╠═93942f8f-5814-4577-b0f6-ff3a7673f891
-# ╠═9cd4b914-ac50-4648-805f-0731210ab4dd
-# ╠═f1a483bc-a23a-4531-ae74-ca481b26c21a
-# ╠═76555f0e-7993-44b1-bedd-2aadee0e9fab
-# ╠═b9891739-ed09-4257-aa3e-990c934b0c45
-# ╟─31e4ce80-6b26-45de-b7ce-6014cb968d75
-# ╟─62171934-6878-4d2b-b30c-e26cb09f902f
-# ╠═bf4673c5-8468-4862-b95b-73e400bf92c6
-# ╠═28d1cef2-f4fb-45e6-8529-8a5621a0e880
-# ╠═4b1a0c66-1397-4890-a30a-fdb1174b9af1
-# ╟─f041e0a3-925f-4960-945f-6901578c6583
-# ╠═52d9e568-6a2a-43b1-87b1-b974f26d8876
-# ╠═60bff96b-91aa-4468-96e2-165e0f2e3aba
-# ╠═f1283953-b999-4e67-b21c-a2bd5e3234e1
-# ╟─f31c3252-3080-4450-8ee0-05429cb3397b
-# ╟─d7a0eace-e3c7-41b2-ae2f-9bce5cc7c94a
-# ╠═0151d20c-ba1c-42e3-a8fc-e2ee2f5779da
-# ╠═a3e4a275-1c43-4e99-9926-8573272d4d98
 # ╟─2d14b423-38d1-424f-85a9-8382708b5703
-# ╠═c8a14db6-cfe3-4a03-b952-ff098bd9c1be
+# ╟─c8a14db6-cfe3-4a03-b952-ff098bd9c1be
 # ╠═ee02c371-757e-4853-9a93-bc67672c52b5
 # ╠═d50ef3bb-94ad-49f3-8901-4c03973a9d67
 # ╟─2f55eedc-8cbc-44da-a94e-e1ffe744592c
@@ -3521,16 +3877,18 @@ version = "3.5.0+0"
 # ╟─bb892363-8e90-46c2-a67c-e6a47ffb9d1c
 # ╟─bb52ed90-afbb-4fd0-9ead-aeabd421dc9b
 # ╠═1fc7fea6-66d0-480b-adc8-b7f5e360316c
-# ╟─98b14086-bc8c-4725-bf46-8e09f698c2f0
+# ╠═98b14086-bc8c-4725-bf46-8e09f698c2f0
 # ╟─31ae04fd-ed82-43bb-b16b-9eb8064060aa
-# ╟─a8210381-8b08-456e-aadc-34c0dde1e693
-# ╟─89a8b900-98aa-4214-8b83-9c5cb6d12110
+# ╠═a8210381-8b08-456e-aadc-34c0dde1e693
+# ╠═89a8b900-98aa-4214-8b83-9c5cb6d12110
 # ╠═c28f5865-7e3c-4d19-83f9-ce85b0e1fefe
 # ╟─110d3a52-bd9a-47f3-8246-064ab1a15bfd
 # ╠═46b4ab6f-f88c-4c4f-8127-d1526f01b559
+# ╟─777cc42b-aa3c-4c07-a0b6-b33d265f7c98
 # ╠═3ea35338-0f95-4f9e-9daf-f7db5e7bad4d
-# ╠═785678a8-6590-43fd-bb32-d8f10859f48f
+# ╠═59c12b90-8fe7-4d02-887d-99f82109cdcc
 # ╠═595944a9-152a-4877-ad74-a75cbdfe7e9f
+# ╠═785678a8-6590-43fd-bb32-d8f10859f48f
 # ╟─cb3738f3-a46b-4533-9a58-d35b97012794
 # ╟─545fcee8-d741-41ea-a14a-2e334427fa82
 # ╟─5ec7d837-3729-449b-9477-7b30c981d730
@@ -3542,8 +3900,53 @@ version = "3.5.0+0"
 # ╠═455b8f56-3f09-4c00-9c77-4e396f19709c
 # ╠═fed19876-0b3a-48d4-8152-0ff6e3224b4e
 # ╠═d9881c88-93ca-47de-9b40-6880046fa720
+# ╠═0d06817a-cc68-4b16-a853-627e2f582e6e
 # ╠═9e0675fd-a898-4c3f-9a11-3774329983ae
 # ╠═01365c09-0987-481c-bb8f-bd0eb01584ce
+# ╟─1e9d739b-0a95-49e6-a489-4f2730799a5e
+# ╠═5706cf61-07da-460b-92af-a5d0e30ae67a
+# ╠═83e0de6d-948f-49a9-b027-1a11faf63e6e
+# ╠═3cb07396-07be-404f-a09a-4de20a43af05
+# ╟─feb1b91a-dcbb-458d-aa0e-58a21a926ad0
+# ╠═7953f1cd-ee07-4013-8428-7f122e6e8b84
+# ╠═51b2a265-a432-4ccb-8ecb-742737385dbd
+# ╠═dd3d1812-0057-4407-9121-69925c3770df
+# ╟─668347ff-0585-4169-8aab-94ee771a55ba
+# ╠═1fca0668-c559-40d5-8345-7939a0dee9f2
+# ╟─b2b5a4e5-380b-400f-bfff-9384cf6ec429
+# ╠═b0be8b8a-db04-4765-af15-ca240987dc0e
+# ╟─87745186-2f63-45ef-91e2-b6d757688948
+# ╠═3f7d1bbd-fa2f-46e3-a535-8a46a068882a
+# ╟─4caaf820-b27d-4944-907d-76517c5afc23
+# ╠═b591ff2a-0e48-4a05-997e-56ec4a3b09b4
+# ╠═d498a775-3c0c-49fe-8078-d4e00d97e142
+# ╠═014cec12-8e87-4ff1-a5a0-d25acc58bd4b
+# ╠═6efc1438-c7af-4845-a4e8-493224d8c984
+# ╟─cb4c24b0-245c-4aed-b34c-123234b45926
+# ╟─ca63b3f6-f303-4319-bec5-23e0e40df2ca
+# ╟─ea2ec924-ae59-4522-9f80-fd689b6fcad2
+# ╟─090d4e9d-fec4-4a26-91d2-43719434c52e
+# ╠═f548d4d0-2e1a-4183-98b3-bb1d3609b130
+# ╠═0f61b1e9-91bf-4117-bd58-2c3f0a2a971a
+# ╟─2e3e387a-6285-4fa4-bf8f-51136bc80a33
+# ╠═4c826ae7-0a07-42d9-affc-abc3aedd056a
+# ╠═bfb4421b-9dd6-4f71-8a84-e0f10b3c761f
+# ╠═93942f8f-5814-4577-b0f6-ff3a7673f891
+# ╠═9cd4b914-ac50-4648-805f-0731210ab4dd
+# ╠═b9891739-ed09-4257-aa3e-990c934b0c45
+# ╠═31e4ce80-6b26-45de-b7ce-6014cb968d75
+# ╟─62171934-6878-4d2b-b30c-e26cb09f902f
+# ╠═bf4673c5-8468-4862-b95b-73e400bf92c6
+# ╠═28d1cef2-f4fb-45e6-8529-8a5621a0e880
+# ╠═4b1a0c66-1397-4890-a30a-fdb1174b9af1
+# ╟─f31c3252-3080-4450-8ee0-05429cb3397b
+# ╟─d7a0eace-e3c7-41b2-ae2f-9bce5cc7c94a
+# ╠═0151d20c-ba1c-42e3-a8fc-e2ee2f5779da
+# ╠═a3e4a275-1c43-4e99-9926-8573272d4d98
+# ╟─f041e0a3-925f-4960-945f-6901578c6583
+# ╠═52d9e568-6a2a-43b1-87b1-b974f26d8876
+# ╠═60bff96b-91aa-4468-96e2-165e0f2e3aba
+# ╠═f1283953-b999-4e67-b21c-a2bd5e3234e1
 # ╟─e95ba453-1bed-49a0-8c8e-a42eb297a895
 # ╠═dc3f9a1a-eb21-4d59-a8fd-fe4d3b6f3173
 # ╠═8cf888ba-d162-4a28-a1ce-12b34e839f5e
