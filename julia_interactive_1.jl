@@ -37,7 +37,14 @@ md"""
 Interactive get-to-know-julia notebook for the **IMPRS-IS BootCamp 2023**
 
 Author: [Benedikt Ehinger](www.s-ccs.de)
+
+---
 """
+
+# ╔═╡ 7a6668e7-b619-4f6d-9ff6-9f1d4128954c
+Markdown.MD(Markdown.Admonition("warning", "Where to start",[md""" What follows is some code that you could read/inspect, but mostly you can ignore it for the exercises at hand. 
+
+Start at **Task 1** """]))
 
 # ╔═╡ 4d4685dc-5e45-4893-8a26-3d553cff3bc8
 function lorenz_step(state,fixed,Δt)
@@ -61,10 +68,10 @@ This function allocates a new array everytime it updates - it is thus slower tha
 # ╔═╡ 869c811e-bd7a-485e-bac4-4cf0006daeab
 function lorenz(fixed,Δt,n)
 	state0 = [1.0, 0.0, 0.0] # initial state
-	res = Array{Float64}(undef,(3,n)) # initialize an Array to save things
+	res = Array{Float64}(undef,(3,n+1)) # initialize an Array to save things
 	res[:,1] .= state0 # assign the initial state
 	
-	for t in 1:n-1
+	for t in 1:n
 		res[:,t+1] = lorenz_step(res[:,t],fixed,Δt)
 	end
 
@@ -88,7 +95,7 @@ end;
 md"""
 # Task 1: Changing parameters
 
-Using Pluto.jl reactive backend, changing a value in some cell, will automatically update all other cells - including plots.
+Using the `Pluto.jl` reactive backend, changing a value in some cell will automatically update all other cells - including plots.
 """
 
 # ╔═╡ a7302ba3-5620-43e6-aee1-abc46393c265
@@ -126,25 +133,13 @@ A slider is defined like this:
 
 
 
-# ╔═╡ e911dd57-bedd-49a9-adcf-ec634e668e6f
-Foldable("(if you want more specifications, click here)",md"""
-You can specify default values + show the values via
-```julia
-@bind var PlutoUI.Slider(0:10,show_value=true,default=defaultvalue)
-```
-
-If you  want to be super fancy, you can put all this in a nice table, providing labels to your sliders:
-```
-md\"\"\"
-|description|slider|
-|---|---|
-|param1| $(@bind var PlutoUI.Slider(0:10,show_value=true,default=defaultvalue))
-\"\"\"
-```
-**Tip:** the `$(juliacode)` syntax runs the inline `juliacode` and 'interpolates' the output back into the string/output format """)
-
 # ╔═╡ 4856cd8b-26de-4577-ac1a-497aef8d1931
-question_box(md"""Generate three sliders for the three parameters in `parameters`. Remember to replace the variablenames in the `parameters` vector itself!
+question_box(md"""Generate three sliders for the three parameters in `parameters`. Remember to replace your chosen variablenames in the `parameters` vector itself!
+""")
+
+# ╔═╡ e580399e-bfed-414b-8437-48c1f5d6afb3
+tip(md"""
+You can get the fancy `σ`, `ρ`, `β` characters by typing e.g. `\beta` + `TAB`
 """)
 
 # ╔═╡ 394ea92a-b487-4c39-a377-e9e814bc946b
@@ -159,28 +154,43 @@ question_box(md"""Generate three sliders for the three parameters in `parameters
 # ╔═╡ 09f20ad4-3567-4de7-921a-7bd05048c99d
 f # replot for your convenience
 
+# ╔═╡ 62b04712-03ec-451f-8011-05c73aeee741
+
+
+# ╔═╡ e911dd57-bedd-49a9-adcf-ec634e668e6f
+tip(Foldable("You want more beautiful sliders? Click & read here",md"""
+You can specify default values + show the values via
+```julia
+@bind var PlutoUI.Slider(0:10,show_value=true,default=defaultvalue)
+```
+
+If you  want to be super fancy, you can put all this in a nice table, providing labels to your sliders:
+```
+md\"\"\"
+|description|slider|
+|---|---|
+|param1| $(@bind var PlutoUI.Slider(0:10,show_value=true,default=defaultvalue))
+\"\"\"
+```
+**Tip:** the `$(juliacode)` syntax runs the inline `juliacode` and 'interpolates' the output back into the string/output format """))
+
 # ╔═╡ aea4a4c9-3c02-4436-8d11-21140264c807
-question_box(md"""
+Markdown.MD(Markdown.Admonition("tip","Bonus-Question",[md"""
 If you have time, provide some `PlutoUI.CheckBox` or `PlutoUI.Select` elements, to change which dimension is plotted on the x/y axis
-"""
-)
+"""]))
+
 
 # ╔═╡ c5791eb1-62e4-47a0-bdc1-c3cb2066bd90
 md"""
-# Task 3: Benchmark against Python
+# Task 3: Compare Julia & Python
 """
 
 # ╔═╡ a69b3724-353f-4639-81f4-0875c4203e12
-PythonCall.pyimport("numpy")
-
-# ╔═╡ 4019ad17-50b0-4983-b375-e237219b99e0
-question_box(md""" Add the `@time` macro infront of the python & julia code to evaluate their timing. 
-
-**Note:** In principle, you should use `BenchmarkTools.@btime` or `BenchmarkTools.@benchmark` which runs the function many times and takes the fastest `@btime` or shows a distribution (@benchmark) - but who has time for that?
-""")
+PythonCall.pyimport("numpy");
 
 # ╔═╡ b2137820-d51c-4a9f-8b5a-73f3f7f6cb1b
-xyzs = pyexec(@NamedTuple{xyzs},"""
+begin
+python_results = pyexec(@NamedTuple{xyzs},"""
 import numpy as np
 def lorenz(xyz,fixed):
     import numpy as np
@@ -200,13 +210,37 @@ for i in range(num_steps):
     xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i],fixed) * dt
 
 """,Main,(;fixed=parameters,num_steps=length(tlist)-1,dt=Δt))
+	python_results = collect(pyconvert(Array,python_results.xyzs)')
+end
 
 # ╔═╡ 9ec4822e-8d7b-4948-afe9-228ca2d924ae
-lorenz(parameters,Δt,length(tlist))
+julia_results = lorenz(parameters,Δt,length(tlist))
+
+# ╔═╡ ab1eabac-cd53-49a5-80db-edf01124071a
+question_box(md"""
+Check that the solution is actually equal, using `==`
+""")
+
+# ╔═╡ 5b309790-4c82-447d-b910-d5a469e52211
+# Program here - Are they equal?
+
+# ╔═╡ 0734c0d9-06c6-445f-bbda-3b8294e89cc6
+# put your code here
+
+# ╔═╡ f2094213-2243-4978-824a-37e1987b9631
+md"""
+# Task 4: Timing is everything
+"""
+
+# ╔═╡ 4019ad17-50b0-4983-b375-e237219b99e0
+question_box(md""" Add the `@time` macro infront of the python & julia code to evaluate their timing. 
+
+**Note:** In principle, you should use `BenchmarkTools.@btime` or `BenchmarkTools.@benchmark` which runs the function many times and takes the fastest (`@btime`) or shows a histogram (@benchmark) - but who has time for that?
+""")
 
 # ╔═╡ 73af4c85-8170-4404-aac7-9d45e698769a
 md"""
-# Task 4: Improve the speed!
+# Task 5: Improve the speed!
 If you are super fast with everything, some optional ideas:
 """
 
@@ -214,11 +248,6 @@ If you are super fast with everything, some optional ideas:
 question_box(md"""**Speeding up Python**
 
 Can you speed up the python code to match Julias code?
-""")
-
-# ╔═╡ 11280da3-437a-45a6-bc6f-92ca2d03a98b
-hint(md"""
-Ooops - I don't know Python well enough to actually speed this up, sorry. Be sure to share your speed improvements with me!
 """)
 
 # ╔═╡ 003214b4-e62c-432a-a9a7-9b580c460de4
@@ -238,9 +267,47 @@ Note the `lorenz_step!` exclamationmark. Which means, that now the lorenz_step f
 
 """)
 
+# ╔═╡ ce86adc0-f10d-47c9-9436-a6b20c2d496e
+md"""
+----
+"""
+
+# ╔═╡ 02172a1a-ac29-4081-886d-a2daeab0d29d
+md"""
+What follows here is just some setup code - interesting maybe to see how Python-Packages can be added in the `PythonCall` package
+"""
+
+# ╔═╡ 609633d1-2b1b-4834-a1c3-84ffe11bc946
+TableOfContents()
+
+# ╔═╡ 8a224690-723a-4af2-8733-8a0a83f7812b
+hint(title::String,str) = Markdown.MD(Markdown.Admonition("hint",title,[str]))
+
+# ╔═╡ 003cd0f8-b7cb-4770-9135-df5058b52a09
+hint("Slider-Solution",md"""
+```julia
+# for one slider:
+@bind σ PlutoUI.Slider(1:0.1:10)
+parameters= [σ, 12/3,4]
+```
+""")
+
+# ╔═╡ 21ecad53-8987-44c2-81d8-6c6374dcd073
+hint("Hover to see the answer and follow up task",md"""
+They are not!
+
+**Task**: Calculate and plot the elementwise differences in one dimension. Use `plot`,`.-`(elementwise subtraction) and `x[1,:]` to access one dimension
+
+""")
+
+# ╔═╡ 11280da3-437a-45a6-bc6f-92ca2d03a98b
+hint("Hint",md"""
+Ooops - I don't know Python well enough to actually speed this up, sorry. Be sure to share your speed improvements with me!
+""")
+
 # ╔═╡ 250144dd-9034-4c05-9316-7bb89df429bf
-hint(md"""
-Makue use of the following function
+hint("Solution",md"""
+Make use of the following function
 ```julia
 function lorenz_step!(state,fixed,Δt)
     x, y, z = state   #variables are part of vector array u
@@ -256,26 +323,13 @@ end
 """)
 
 # ╔═╡ 49576c5c-15d6-4c56-8190-f2ce022e6233
-hint(md"""
+hint("Bonus: For the super-curious minded", md"""
 Somewhat surprising (to me) this code:
 ```julia
 res = hcat([lorenz_step!(state0,fixed,Δt) for s in tlist]...)
 ```
 has the same fast performance as the loop!
 """)
-
-# ╔═╡ ce86adc0-f10d-47c9-9436-a6b20c2d496e
-md"""
-----
-"""
-
-# ╔═╡ 02172a1a-ac29-4081-886d-a2daeab0d29d
-md"""
-What follows here is just some setup code - interesting maybe to see how Python-Packages can be added in the `PythonCall` package
-"""
-
-# ╔═╡ 609633d1-2b1b-4834-a1c3-84ffe11bc946
-TableOfContents()
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1757,6 +1811,7 @@ version = "3.5.0+0"
 # ╔═╡ Cell order:
 # ╟─83ed505e-21f8-11ee-1d5c-0f27e8691b73
 # ╟─5b23e82b-04e3-4fcf-ac7a-2624a8f2112b
+# ╠═7a6668e7-b619-4f6d-9ff6-9f1d4128954c
 # ╠═4d4685dc-5e45-4893-8a26-3d553cff3bc8
 # ╟─10ab9257-3073-4f20-924b-29b2990e32a6
 # ╠═869c811e-bd7a-485e-bac4-4cf0006daeab
@@ -1768,19 +1823,27 @@ version = "3.5.0+0"
 # ╠═3fdc5e18-c563-499d-bc7a-4ce8200b4d3f
 # ╠═afb15a36-e6c5-4be9-aa8d-beecdb4a70f0
 # ╟─49342d6f-a24a-42aa-9f90-dfff82ad35c2
-# ╟─e911dd57-bedd-49a9-adcf-ec634e668e6f
-# ╠═4856cd8b-26de-4577-ac1a-497aef8d1931
+# ╟─4856cd8b-26de-4577-ac1a-497aef8d1931
+# ╟─e580399e-bfed-414b-8437-48c1f5d6afb3
 # ╠═394ea92a-b487-4c39-a377-e9e814bc946b
 # ╠═f9d3ca6f-bb83-41fa-9d85-24d0197a72bf
 # ╠═a8908646-6aa9-4774-8257-054370583fcb
 # ╠═09f20ad4-3567-4de7-921a-7bd05048c99d
+# ╠═62b04712-03ec-451f-8011-05c73aeee741
+# ╟─e911dd57-bedd-49a9-adcf-ec634e668e6f
+# ╟─003cd0f8-b7cb-4770-9135-df5058b52a09
 # ╟─aea4a4c9-3c02-4436-8d11-21140264c807
 # ╟─c5791eb1-62e4-47a0-bdc1-c3cb2066bd90
 # ╠═4904a74d-ec8c-4d1d-aab9-fb89f16d4bd9
 # ╠═a69b3724-353f-4639-81f4-0875c4203e12
-# ╟─4019ad17-50b0-4983-b375-e237219b99e0
 # ╠═b2137820-d51c-4a9f-8b5a-73f3f7f6cb1b
 # ╠═9ec4822e-8d7b-4948-afe9-228ca2d924ae
+# ╟─ab1eabac-cd53-49a5-80db-edf01124071a
+# ╠═5b309790-4c82-447d-b910-d5a469e52211
+# ╟─21ecad53-8987-44c2-81d8-6c6374dcd073
+# ╠═0734c0d9-06c6-445f-bbda-3b8294e89cc6
+# ╟─f2094213-2243-4978-824a-37e1987b9631
+# ╟─4019ad17-50b0-4983-b375-e237219b99e0
 # ╟─73af4c85-8170-4404-aac7-9d45e698769a
 # ╟─88a8cdfb-5300-41c6-a9ba-2da53d37ee91
 # ╟─11280da3-437a-45a6-bc6f-92ca2d03a98b
@@ -1791,5 +1854,6 @@ version = "3.5.0+0"
 # ╟─02172a1a-ac29-4081-886d-a2daeab0d29d
 # ╠═bb2d7aa2-f244-4163-8b21-6dd367c465d5
 # ╠═609633d1-2b1b-4834-a1c3-84ffe11bc946
+# ╠═8a224690-723a-4af2-8733-8a0a83f7812b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
