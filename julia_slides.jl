@@ -214,11 +214,11 @@ Let's simulate a simple pendulum and use some packages, that actually know **not
 
 # ╔═╡ a8575e86-a5f8-4743-bb15-1166a236431a
 begin
-gaccel = (9.79 ± 0.02)N*(m^2/kg^2) # Gravitational constants
-L = (1.00 ± 0.01)m # Length of the pendulum
+gaccel = (9.79 ± 0.02)N*(m^2/kg^2)  # Gravitational constants
+L 	   = (1.00 ± 0.01)m 			# Length of the pendulum
 
 #Initial Conditions
-u₀ = [(0 ± 0), (π / 3 ± 0.02)] # Initial speed and initial angle
+u₀ = [(0 ± 0), (π / 3 ± 0.02)] 		# Initial speed and initial angle
 tspan = (0.0s, 10.0s)
 
 function simplependulum(du,u,p,t)
