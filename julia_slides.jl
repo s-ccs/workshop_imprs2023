@@ -53,6 +53,9 @@ with_theme(theme_minimal()) do
 end
 end
 
+# ╔═╡ d340101a-d932-4035-baf1-ee772e9bf25d
+	using MLJ, DecisionTree,MLJDecisionTreeInterface
+
 # ╔═╡ e539b501-d588-4d46-ba13-38d5e04b7529
 let
 	using ForwardDiff
@@ -60,9 +63,9 @@ let
 	ḟ(x) = 2*x*cos(x^2)
 	xs = range(0,3,length=100)
 	lines( xs, f.(xs))
-	lines!(xs, ḟ.(xs)) # derivative
+	#lines!(xs, ḟ.(xs)) # derivative
 
-	lines!(xs,ForwardDiff.derivative.(f,xs).+10)
+	#lines!(xs,ForwardDiff.derivative.(f,xs))
 	current_figure()
 end
 
@@ -199,9 +202,6 @@ end
 # ╔═╡ 31c21f8e-09c7-4eaa-b5f6-fc2046f77b0a
 first_spike(repeat([-0.5nA],500),1ms)
 
-# ╔═╡ 968adac3-56eb-4ccd-b6a0-9bab802cce29
-
-
 # ╔═╡ a3916666-7788-4716-8d6f-3ea75d9c6ad1
 md"""
 ## Combining random packages
@@ -242,12 +242,6 @@ let
 	current_figure()
 end
 
-# ╔═╡ 4c13eeaf-f04b-46eb-bcea-771307f8ee1b
-
-
-# ╔═╡ 6c9967ee-2655-4015-81a1-377c46038629
-
-
 # ╔═╡ 18e627c6-3dca-4d6d-a825-5884c5541ffb
 md"""
 ## A quick showcase of Pluto
@@ -281,9 +275,17 @@ moonindex = clock
 # ╔═╡ e6cb58ee-6a3b-48de-9a0f-7bc09cc2c3ee
 #@htl """<span style="font-size: 10rem;">$(moonphases[moonindex])</span>"""
 
+# ╔═╡ ebcc8d82-3448-4e6d-9a05-f3393f2b8127
+md"""
+# Now it's your turn!
+Go to: [workshop.s-ccs.de](https://workshop.s-ccs.de)
+
+And get started with **Task 1** & **Task 2**
+"""
+
 # ╔═╡ 765ce44e-73ed-484e-81f2-c68c23090372
 md"""
-# A first showcase of Julias syntax
+# A tour through Julias syntax
 
 
 #### Syntax
@@ -320,36 +322,39 @@ md"""
 Introducing splatting `...` and the `.` operator and the `!` convention
 """
 
+# ╔═╡ b25630ca-ca7b-4d8d-ba70-44f6c04a7787
+md"""
+###### Elementwise operators
+`myarray - 5` vs. `myarray .- 5`
+"""
+
 # ╔═╡ 2c8a7b9b-6b02-4ea2-a909-1cf8e9f31c04
 myarray
 
 # ╔═╡ 24bcdd0b-7cee-4613-a70f-fdc11d3d7c4f
-myarray .- 5
+# myarray .- 5
 
 # ╔═╡ 7df74cd0-89e8-4452-9a58-3e4b3c51db2f
 md"""
+###### Ranges, operators and splatting
+
 `+(50,1,2,3,4)` vs. `+(50,1:4)` vs. `+(50,[1,2,3,4])` vs. `+(50,1:4...)`
 """
 
-# ╔═╡ 4dcb0a2c-f491-4e00-a19e-a015d8949922
-typeof(collect(1:4))
-
 # ╔═╡ b99c2a27-32b5-4020-9bd2-802d66cbcb15
-50 +1 +2 + 3+ 4
+#50 + 1 + 2 + 3 + 4
 
 # ╔═╡ 96712a8d-3c61-41fd-8136-7cda92d810f7
-+(50,1,2,3,4)
+#+(50,1,2,3,4)
 
 # ╔═╡ e30f995e-98c6-4633-8e6b-3d83d7ff38fe
-+(50,[1,2,3,4]...)
+#+(50,[1,2,3,4])
 
 # ╔═╡ 8e3b1614-e430-4876-9887-0cfab25e6e66
-[50,(1:4)...]
+#[50,(1:4)]
 
-# ╔═╡ b25630ca-ca7b-4d8d-ba70-44f6c04a7787
-md"""
-`myarray - 5` vs. `myarray .- 5`
-"""
+# ╔═╡ f87fbe41-a249-4ab0-b777-f83e18490f4b
+#[50,(1:4)...]
 
 # ╔═╡ b0fa75ce-37ef-45b2-be50-0a2b596a85ec
 md"""
@@ -361,10 +366,10 @@ let
 a = [3,2,1,199,50]
 b = [3,2,1,199,50]
 sort(a)
-sort!(b)
 	
 println("non-inplace: ",a)
-println("inplace:     ", b)
+#sort!(b)
+#println("inplace:     ", b)
 end
 
 # ╔═╡ 544f893e-9780-41d2-b749-4f1cb7b6ede5
@@ -391,7 +396,7 @@ One part: How to make sure same package-versions are used? => Python environment
 
 Inbuilt solution in Julia: `Project.toml` and `Manifest.toml`
 
-**Project.toml**
+**📄Project.toml**
 ```
 [deps]
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
@@ -399,7 +404,7 @@ RCall = "6f49c342-dc21-5d91-9882-a32aef131414"
 ```
 => keeps track of user-added dependencies
 
-**Manifest.toml**
+**📄Manifest.toml**
 ```
 
 julia_version = "1.9.2"
@@ -609,26 +614,35 @@ md"""
 # ╔═╡ 3ea35338-0f95-4f9e-9daf-f7db5e7bad4d
 nTimes = 1_000_000
 
-# ╔═╡ 59c12b90-8fe7-4d02-887d-99f82109cdcc
-fun() = sum(rand(10000))
+# ╔═╡ 6f3b2def-2058-4ad7-ae04-5f02f3373a63
+πapprox(n) = sum([((rand()^2 + rand()^2) ≤ 1 ? 1 : 0) for k in range(1,n)])*4/n
+
+# ╔═╡ 05ca9a83-a2db-4cbe-9c50-f29fdbd458d0
+begin
+	
+
+		function calc_π_parallel(repeats,n)
+		a = fill(0.,repeats)
+	    Threads.@threads for i in 1:repeats
+			a[i] = πapprox(n)
+		end
+		return mean(a)
+	end
+	
+	function calc_π_serial(repeats,n)
+		a = fill(0.,repeats)
+		for i in 1:repeats
+			a[i] = πapprox(n)
+		end
+		return mean(a)
+	end
+end
 
 # ╔═╡ 595944a9-152a-4877-ad74-a75cbdfe7e9f
-@time let
-a = fill(0.,nTimes)
-for i = 1:nTimes
-   	a[i] = fun()
-end
-sum(a)
-end
+@time calc_π_serial(20,nTimes)
 
 # ╔═╡ 785678a8-6590-43fd-bb32-d8f10859f48f
-@time let
-a = fill(0.,nTimes)
-Threads.@threads for i = 1:nTimes
-		   a[i] = fun()
-end
-sum(a)
-end
+@time calc_π_parallel(20,nTimes)
 
 # ╔═╡ cb3738f3-a46b-4533-9a58-d35b97012794
 md"""
@@ -665,12 +679,31 @@ C = A*b # let's goooo!
 
 # ╔═╡ f0b9c97d-31ce-4016-90e3-c5c30116d4b6
 md"""
-## Machine Learning & Stats
+# Machine Learning & Stats
+(I'm not really a DeepLearner, but there is `Flux.jl` which is supposedly really nice ;-))
 """
+
+# ╔═╡ bea306d3-ccd5-48da-a299-3bc247d6b16a
+md"""
+## MLJ.jl
+A scikit-learn replacement
+"""
+
+# ╔═╡ 1c250ad7-d21f-4d49-929a-e900ba8c9e48
+begin 
+	DecisionTreeClassifier = @load DecisionTreeClassifier pkg=DecisionTree verbosity=0
+	y, X = unpack(MLJ.load_iris(), ==(:target), colname -> true); 
+		
+	mach = machine(DecisionTreeClassifier(), X, y)
+	evaluate!(mach, resampling=Holdout(fraction_train=0.7),
+		    measures=[log_loss, brier_score])
+     
+	
+end
 
 # ╔═╡ 2ba9129b-dcf4-478c-be28-b74ccb1ecffc
 md"""
-### Auto-Diff
+## Auto-Diff
 """
 
 # ╔═╡ 54b8147e-355b-46da-929a-0ac8b1979d68
@@ -679,37 +712,53 @@ md"""
 Also supports autodiff, thus you can introduce **weird** models and functions!
 """
 
-# ╔═╡ 455b8f56-3f09-4c00-9c77-4e396f19709c
-#weird(x) = x;
-weird(x) = x>0 ? x+10 : x # make the modelfit worse for any m > 0;
-
 # ╔═╡ fed19876-0b3a-48d4-8152-0ff6e3224b4e
 begin 
-	@model function gdemo(x, y)
-    s² ~ InverseGamma(2, 3)
-    m ~ Normal(0, sqrt(s²))
+	
+	myTruncateFunction(μ) = μ>0 ? Inf : μ # truncate possible μ at 0
+	@model function gdemo(y)
+	# priors
+    σ ~ InverseGamma(2, 3)
+    μ ~ Normal(0, σ)
 		
-    x ~ Normal(m, sqrt(s²))
-    return y ~ Normal(weird(m), sqrt(s²))
+	for n in eachindex(y)
+		#y[n] ~ Normal(μ,σ)
+		#y[n] ~ Normal(myTruncateFunction(μ),σ)
+	end
 end
 end
+
+# ╔═╡ 44f3069f-c051-4d76-af7e-09e48a31a5a8
+aside(tip(md"**myTruncateFunction**: just for demo - better to use the `Truncated` function from Turing.jl"),v_offset=-300)
 
 # ╔═╡ d9881c88-93ca-47de-9b40-6880046fa720
 begin
 	# we don't fit the model to data, but just sample from it
-	init_model = gdemo(1.5, 2)
+	init_model = gdemo([1.5, 1.0, 2])
 	chn = sample(init_model, NUTS(), 1000);
 end;
 
-# ╔═╡ 0d06817a-cc68-4b16-a853-627e2f582e6e
-
-
 # ╔═╡ 9e0675fd-a898-4c3f-9a11-3774329983ae
-hist(DataFrame(chn)[:,"m"],bins=100)
+hist(DataFrame(chn)[:,"μ"],bins=100)
 
-# ╔═╡ 01365c09-0987-481c-bb8f-bd0eb01584ce
+# ╔═╡ f5ab2a8c-f6ef-41c3-b76a-2fafecc8ec83
 md"""
-### Flux.jl
+# Things I like, things I don't like
+
+|➕ | ➖ |
+|:---|---|
+|🚀 Speed of calculation |  Installation-times 🐌|
+|🔤 Explicit syntax | Time-to-first-X (but getting there) 🐌|
+|📦 PackageManager ♥ | No concept of traits/interfaces, makes inheritance hard|
+|👨‍👨‍👦‍👦 Community is very helpful  | Ecosystem is small (but sufficient imho)🌏|
+|🧮 LinAlg/numpy included    |  No julia-emoji yet|
+|$$\LaTeX$$; `\beta = β`    |  |
+|Developing, testing, documenting packages is easy / good workflows    |  |
+|💸 it is free    |  |
+|📈 growing users and interactions    |  |
+|🐍 Interoperability with python/R is solid  |  |
+|🎉 it's surprisingly fun!  | |
+
 """
 
 # ╔═╡ 1e9d739b-0a95-49e6-a489-4f2730799a5e
@@ -732,7 +781,7 @@ is `3` included in `[5,2,5,1,2,3,7,5]`?
 vec = collect(range(1,1_000_000));
 
 # ╔═╡ 3cb07396-07be-404f-a09a-4de20a43af05
- x = 2_000_000;
+ x = 2_000_000; # well outside :-(
 
 # ╔═╡ feb1b91a-dcbb-458d-aa0e-58a21a926ad0
 md"""
@@ -752,7 +801,15 @@ with for-loops (we know this is bad)
 """
 
 # ╔═╡ dd3d1812-0057-4407-9121-69925c3770df
-# R missing?
+nai_R = @elapsed R"""
+	for_search <- function(vec, x) {
+	  for (i in 1:length(vec))
+	    if (vec[i] == x)
+	      return (TRUE)
+	  FALSE
+	}
+	for_search(vec,x)
+  """
 
 # ╔═╡ 668347ff-0585-4169-8aab-94ee771a55ba
 md"""
@@ -760,7 +817,7 @@ md"""
 """
 
 # ╔═╡ 1fca0668-c559-40d5-8345-7939a0dee9f2
-@time R"x %in% vec";
+nat_R = @elapsed R"x %in% vec"
 
 # ╔═╡ b2b5a4e5-380b-400f-bfff-9384cf6ec429
 md"""
@@ -770,7 +827,7 @@ with for-loops (we know this is bad)
 """
 
 # ╔═╡ b0be8b8a-db04-4765-af15-ca240987dc0e
-@time pyexec(Nothing,"""
+nai_py = @elapsed pyexec(Nothing,"""
 def for_search(vec, x):
     for i in range(len(vec)):
         if vec[i] == x:
@@ -786,10 +843,10 @@ md"""
 """
 
 # ╔═╡ 3f7d1bbd-fa2f-46e3-a535-8a46a068882a
-@time pyexec(@NamedTuple{answer::Bool},"""
+nat_py = @elapsed pyexec(@NamedTuple{answer::Bool},"""
 answer = x in vec
-""",Main,(vec=realvec,x=x)
-);
+""",Main,(vec=vec,x=x)
+)
 
 # ╔═╡ 4caaf820-b27d-4944-907d-76517c5afc23
 md"""
@@ -808,15 +865,26 @@ function myfun(vec, x)
 end
 
 # ╔═╡ d498a775-3c0c-49fe-8078-d4e00d97e142
-@time myfun(vec,x);
+nai_jl = @elapsed myfun(vec,x)
 
 # ╔═╡ 014cec12-8e87-4ff1-a5a0-d25acc58bd4b
 md"""
-### Julia native
+### Julia inbuilt
 """
 
 # ╔═╡ 6efc1438-c7af-4845-a4e8-493224d8c984
-@time  x ∈ vec;
+nat_jl = @elapsed  x ∈ vec
+
+# ╔═╡ 57f343a6-9373-4cc4-abd0-fa8859d20c29
+md"""
+
+|  | naive | native |
+|---|---|---|
+|R | $nai_R | $nat_R |
+|python | $nai_py | $nat_py |
+|julia| **$nai_jl** | **$nat_jl** |
+
+"""
 
 # ╔═╡ cb4c24b0-245c-4aed-b34c-123234b45926
 PlutoTeachingTools.tip(md"The point is not that Julia is always faster - it is that it is easier to write fast code!")
@@ -994,15 +1062,138 @@ md"""
 # ╔═╡ 8cf888ba-d162-4a28-a1ce-12b34e839f5e
 @code_native pos(1)
 
+# ╔═╡ bfcb705c-78d4-4d67-a52b-42ab12d717a9
+depth(m::MLJDecisionTreeInterface.DecisionTreeClassifier) = m.display_depth
+
+# ╔═╡ ee05c5c2-e15d-4615-b95c-fc0827b9660a
+begin
+	using GraphMakie, Graphs, NetworkLayout
+import Base.convert
+function Base.convert(::Type{SimpleDiGraph},model::DecisionTree.Root; maxdepth=depth(model))
+    if maxdepth == -1
+        maxdepth = depth(model)
+    end
+    g = SimpleDiGraph()
+    properties = Any[]
+    walk_tree!(model.node,g,maxdepth,properties)
+    return g, properties
+end
+
+function walk_tree!(node::DecisionTree.Node, g, depthLeft, properties)
+    add_vertex!(g)
+
+    if depthLeft == 0
+        push!(properties,(Nothing,"..."))
+        return vertices(g)[end]
+    else
+        depthLeft -= 1
+    end
+
+    current_vertex = vertices(g)[end]
+    val = node.featval
+
+    featval = isa(val,AbstractString) ? val : round(val;sigdigits=2)
+    push!(properties,(DecisionTree.Node,"Feature $(node.featid) < $featval ?"))
+
+
+    child = walk_tree!(node.left,g,depthLeft,properties)
+    add_edge!(g,current_vertex,child)
+
+    child = walk_tree!(node.right,g,depthLeft,properties)
+    add_edge!(g,current_vertex,child)
+
+    return current_vertex
+end
+
+function walk_tree!(leaf::DecisionTree.Leaf, g, depthLeft, properties)
+    add_vertex!(g)
+    n_matches = count(leaf.values .== leaf.majority)
+    #ratio = string(n_matches, "/", length(leaf.values))
+
+    push!(properties,(Leaf,"$(leaf.majority)"))# : $(ratio)"))
+    return vertices(g)[end]
+end
+	@recipe(PlotDecisionTree) do scene
+    Attributes(
+        nodecolormap = :darktest,
+        textcolor = RGBf(0.5,0.5,0.5),
+        leafcolor = :darkgreen,
+        nodecolor = :white,
+        maxdepth = -1,
+    )
+end
+
+import GraphMakie.graphplot
+import Makie.plot!
+function GraphMakie.graphplot(model::DecisionTree.Root;kwargs...)
+    f,ax,h = plotdecisiontree(model;kwargs...)
+    hidedecorations!(ax); hidespines!(ax)
+    return f
+end
+
+function plot!(plt::PlotDecisionTree{<:Tuple{DecisionTree.Root}})
+
+    @extract plt leafcolor,textcolor,nodecolormap,nodecolor,maxdepth
+    model = plt[1]
+
+    # convert to graph
+    tmpObs = @lift convert(SimpleDiGraph,$model;maxdepth=$maxdepth)
+    graph = @lift $tmpObs[1]
+    properties = @lift $tmpObs[2]
+
+    # extract labels
+    labels = @lift [string(p[2]) for p in $properties]
+
+    # set the colors, first for nodes & cutoff-nodes, then for leaves
+    nlabels_color = map(properties, labels, leafcolor,textcolor,nodecolormap) do properties,labels,leafcolor,textcolor,nodecolormap
+
+        # set colors for the individual elements
+        leaf_ix = findall([p[1] == Leaf for p in properties])
+        leafValues = [p[1] for p in split.(labels[leaf_ix]," : ")]
+
+        # one color per category
+        uniqueLeafValues = unique(leafValues)
+        individual_leaf_colors = resample_cmap(nodecolormap,length(uniqueLeafValues))
+        nlabels_color = Any[p[1] == DecisionTree.Node ? textcolor : leafcolor for p in properties]
+        for (ix,uLV) = enumerate(uniqueLeafValues)
+            ixV = leafValues .== uLV
+            nlabels_color[leaf_ix[ixV]] .= individual_leaf_colors[ix]
+        end
+        return nlabels_color
+    end
+
+    # plot :)
+    graphplot!(plt,graph;layout=Buchheim(),
+               nlabels=labels,
+               node_size = 100,
+               node_color=nodecolor,
+               nlabels_color=nlabels_color,
+               nlabels_align=(:center,:center),
+               ##tangents=((0,-1),(0,-1))
+               )
+    return plt
+end
+end
+
+# ╔═╡ 461440fc-91a5-449d-b887-a477caecf1dc
+	graphplot(fitted_params(mach).raw_tree;maxdepth=mach.model.display_depth)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+DecisionTree = "7806a523-6efd-50cb-b5f6-3fa6f1930dbb"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+MLJ = "add582a8-e3ab-11e8-2d5e-e98b27df1bc7"
+MLJDecisionTreeInterface = "c6f25543-311c-4c74-83dc-3ea6d1015661"
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 PlutoReport = "ab5eb977-4f23-42a0-954d-2743fb6218c4"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
@@ -1016,9 +1207,16 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 CairoMakie = "~0.10.6"
 DataFrames = "~1.6.0"
 DataFramesMeta = "~0.14.0"
+DecisionTree = "~0.12.3"
 ForwardDiff = "~0.10.36"
+GraphMakie = "~0.5.5"
+Graphs = "~1.8.0"
 HTTP = "~1.9.14"
+MLJ = "~0.19.2"
+MLJDecisionTreeInterface = "~0.4.0"
+Makie = "~0.19.7"
 Measurements = "~2.9.0"
+NetworkLayout = "~0.4.5"
 OrdinaryDiffEq = "~6.53.4"
 PlutoReport = "~0.4.0"
 PlutoTeachingTools = "~0.2.12"
@@ -1035,12 +1233,18 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "7a9bc06fbf9657db4610b6af7f38539df9c31b81"
+project_hash = "5ec995523c4df371766606ac925fe5958678a922"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f5c25e8a5b29b5e941b7408bc8cc79fea4d9ef9a"
 uuid = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 version = "0.1.6"
+
+[[deps.ARFFFiles]]
+deps = ["CategoricalArrays", "Dates", "Parsers", "Tables"]
+git-tree-sha1 = "e8c8e0a2be6eb4f56b1672e46004463033daa409"
+uuid = "da404889-ca92-49ff-9e8b-0aa6b4d38dc8"
+version = "1.4.1"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1354,6 +1558,18 @@ weakdeps = ["JSON", "RecipesBase", "SentinelArrays", "StructTypes"]
     CategoricalArraysSentinelArraysExt = "SentinelArrays"
     CategoricalArraysStructTypesExt = "StructTypes"
 
+[[deps.CategoricalDistributions]]
+deps = ["CategoricalArrays", "Distributions", "Missings", "OrderedCollections", "Random", "ScientificTypes"]
+git-tree-sha1 = "da68989f027dcefa74d44a452c9e36af9730a70d"
+uuid = "af321ab8-2d2e-40a6-b165-3d674595d28e"
+version = "0.1.10"
+
+    [deps.CategoricalDistributions.extensions]
+    UnivariateFiniteDisplayExt = "UnicodePlots"
+
+    [deps.CategoricalDistributions.weakdeps]
+    UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
+
 [[deps.Chain]]
 git-tree-sha1 = "8c4920235f6c561e401dfe569beb8b924adad003"
 uuid = "8be319e6-bccf-4806-a6f7-6fae938471bc"
@@ -1469,6 +1685,11 @@ weakdeps = ["InverseFunctions"]
     [deps.CompositionsBase.extensions]
     CompositionsBaseInverseFunctionsExt = "InverseFunctions"
 
+[[deps.ComputationalResources]]
+git-tree-sha1 = "52cb3ec90e8a8bea0e62e275ba577ad0f74821f7"
+uuid = "ed09eef8-17a6-5b46-8889-db040fac31e3"
+version = "0.3.2"
+
 [[deps.ConcurrentUtilities]]
 deps = ["Serialization", "Sockets"]
 git-tree-sha1 = "5372dbbf8f0bdb8c700db5367132925c0771ef7e"
@@ -1551,6 +1772,12 @@ version = "1.0.0"
 [[deps.Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
+[[deps.DecisionTree]]
+deps = ["AbstractTrees", "DelimitedFiles", "LinearAlgebra", "Random", "ScikitLearnBase", "Statistics"]
+git-tree-sha1 = "c6475a3ccad06cb1c2ebc0740c1bb4fe5a0731b7"
+uuid = "7806a523-6efd-50cb-b5f6-3fa6f1930dbb"
+version = "0.12.3"
 
 [[deps.DefineSingletons]]
 git-tree-sha1 = "0fba8b706d0178b4dc7fd44a96a92382c9065c2c"
@@ -1690,6 +1917,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "e3290f2d49e661fbd94046d7e3726ffcb2d41053"
 uuid = "5ae413db-bbd1-5e63-b57d-d24a61df00f5"
 version = "2.2.4+0"
+
+[[deps.EarlyStopping]]
+deps = ["Dates", "Statistics"]
+git-tree-sha1 = "98fdf08b707aaf69f524a6cd0a67858cefe0cfb6"
+uuid = "792122b4-ca99-40de-a6bc-6742525f08b6"
+version = "0.3.0"
 
 [[deps.EllipticalSliceSampling]]
 deps = ["AbstractMCMC", "ArrayInterface", "Distributions", "Random", "Statistics"]
@@ -1928,6 +2161,12 @@ git-tree-sha1 = "d3b3624125c1474292d0d8ed0f65554ac37ddb23"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.74.0+2"
 
+[[deps.GraphMakie]]
+deps = ["DataStructures", "GeometryBasics", "Graphs", "LinearAlgebra", "Makie", "NetworkLayout", "PolynomialRoots", "SimpleTraits", "StaticArrays"]
+git-tree-sha1 = "969a8bbc241342557197272b6bf31c24768ccedb"
+uuid = "1ecd5474-83a3-4783-bb4f-06765db800d2"
+version = "0.5.5"
+
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
 git-tree-sha1 = "d61890399bc535850c4bf08e4e0d3a7ad0f21cbd"
@@ -2131,6 +2370,12 @@ git-tree-sha1 = "4ced6667f9974fc5c5943fa5e2ef1ca43ea9e450"
 uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 version = "1.8.0"
 
+[[deps.IterationControl]]
+deps = ["EarlyStopping", "InteractiveUtils"]
+git-tree-sha1 = "d7df9a6fdd82a8cfdfe93a94fcce35515be634da"
+uuid = "b3c1a2ee-3fec-4384-bf48-272ea71de57c"
+version = "0.5.3"
+
 [[deps.IteratorInterfaceExtensions]]
 git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
@@ -2265,6 +2510,12 @@ version = "0.15.21"
     DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
     DiffEqBiological = "eb300fae-53e8-50a0-950c-e21f52c2b7e0"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+
+[[deps.LatinHypercubeSampling]]
+deps = ["Random", "StableRNGs", "StatsBase", "Test"]
+git-tree-sha1 = "825289d43c753c7f1bf9bed334c253e9913997f8"
+uuid = "a5e1c1ea-c99a-51d3-a14d-a9a37257b02d"
+version = "1.9.0"
 
 [[deps.LayoutPointers]]
 deps = ["ArrayInterface", "LinearAlgebra", "ManualMemory", "SIMDTypes", "Static", "StaticArrayInterface"]
@@ -2465,6 +2716,16 @@ weakdeps = ["ChainRulesCore", "ForwardDiff", "SpecialFunctions"]
     ForwardDiffExt = ["ChainRulesCore", "ForwardDiff"]
     SpecialFunctionsExt = "SpecialFunctions"
 
+[[deps.LossFunctions]]
+deps = ["Markdown", "Requires", "Statistics"]
+git-tree-sha1 = "c2b72b61d2e3489b1f9cae3403226b21ec90c943"
+uuid = "30fc2ffe-d236-52d8-8643-a9d8f7c094a7"
+version = "0.11.0"
+weakdeps = ["CategoricalArrays"]
+
+    [deps.LossFunctions.extensions]
+    LossFunctionsCategoricalArraysExt = "CategoricalArrays"
+
 [[deps.LoweredCodeUtils]]
 deps = ["JuliaInterpreter"]
 git-tree-sha1 = "60168780555f3e663c536500aa790b6368adc02a"
@@ -2494,11 +2755,53 @@ git-tree-sha1 = "eb006abbd7041c28e0d16260e50a24f8f9104913"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
 version = "2023.2.0+0"
 
+[[deps.MLJ]]
+deps = ["CategoricalArrays", "ComputationalResources", "Distributed", "Distributions", "LinearAlgebra", "MLJBase", "MLJEnsembles", "MLJIteration", "MLJModels", "MLJTuning", "OpenML", "Pkg", "ProgressMeter", "Random", "ScientificTypes", "Statistics", "StatsBase", "Tables"]
+git-tree-sha1 = "d26cd777c711c332019b39445823cbb1f6cdb7e5"
+uuid = "add582a8-e3ab-11e8-2d5e-e98b27df1bc7"
+version = "0.19.2"
+
+[[deps.MLJBase]]
+deps = ["CategoricalArrays", "CategoricalDistributions", "ComputationalResources", "Dates", "DelimitedFiles", "Distributed", "Distributions", "InteractiveUtils", "InvertedIndices", "LinearAlgebra", "LossFunctions", "MLJModelInterface", "Missings", "OrderedCollections", "Parameters", "PrettyTables", "ProgressMeter", "Random", "ScientificTypes", "Serialization", "StatisticalTraits", "Statistics", "StatsBase", "Tables"]
+git-tree-sha1 = "2c9d6b9c627a80f6e6acbc6193026f455581fd04"
+uuid = "a7f614a8-145f-11e9-1d2a-a57a1082229d"
+version = "0.21.13"
+
+[[deps.MLJDecisionTreeInterface]]
+deps = ["CategoricalArrays", "DecisionTree", "MLJModelInterface", "Random", "Tables"]
+git-tree-sha1 = "8059d088428cbe215ea0eb2199a58da2d806d446"
+uuid = "c6f25543-311c-4c74-83dc-3ea6d1015661"
+version = "0.4.0"
+
+[[deps.MLJEnsembles]]
+deps = ["CategoricalArrays", "CategoricalDistributions", "ComputationalResources", "Distributed", "Distributions", "MLJBase", "MLJModelInterface", "ProgressMeter", "Random", "ScientificTypesBase", "StatsBase"]
+git-tree-sha1 = "95b306ef8108067d26dfde9ff3457d59911cc0d6"
+uuid = "50ed68f4-41fd-4504-931a-ed422449fee0"
+version = "0.3.3"
+
+[[deps.MLJIteration]]
+deps = ["IterationControl", "MLJBase", "Random", "Serialization"]
+git-tree-sha1 = "be6d5c71ab499a59e82d65e00a89ceba8732fcd5"
+uuid = "614be32b-d00c-4edb-bd02-1eb411ab5e55"
+version = "0.5.1"
+
 [[deps.MLJModelInterface]]
 deps = ["Random", "ScientificTypesBase", "StatisticalTraits"]
 git-tree-sha1 = "c8b7e632d6754a5e36c0d94a4b466a5ba3a30128"
 uuid = "e80e1ace-859a-464e-9ed9-23947d8ae3ea"
 version = "1.8.0"
+
+[[deps.MLJModels]]
+deps = ["CategoricalArrays", "CategoricalDistributions", "Combinatorics", "Dates", "Distances", "Distributions", "InteractiveUtils", "LinearAlgebra", "MLJModelInterface", "Markdown", "OrderedCollections", "Parameters", "Pkg", "PrettyPrinting", "REPL", "Random", "RelocatableFolders", "ScientificTypes", "StatisticalTraits", "Statistics", "StatsBase", "Tables"]
+git-tree-sha1 = "2b49f04f70266a2b040eb46ece157c4f5c1b0c13"
+uuid = "d491faf4-2d78-11e9-2867-c94bc002c0b7"
+version = "0.16.10"
+
+[[deps.MLJTuning]]
+deps = ["ComputationalResources", "Distributed", "Distributions", "LatinHypercubeSampling", "MLJBase", "ProgressMeter", "Random", "RecipesBase"]
+git-tree-sha1 = "02688098bd77827b64ed8ad747c14f715f98cfc4"
+uuid = "03970b2e-30c4-11ea-3135-d1576263f10f"
+version = "0.7.4"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -2657,6 +2960,12 @@ git-tree-sha1 = "d92b107dbb887293622df7697a2223f9f8176fcd"
 uuid = "f09324ee-3d7c-5217-9330-fc30815ba969"
 version = "1.1.1"
 
+[[deps.NetworkLayout]]
+deps = ["GeometryBasics", "LinearAlgebra", "Random", "Requires", "SparseArrays", "StaticArrays"]
+git-tree-sha1 = "2bfd8cd7fba3e46ce48139ae93904ee848153660"
+uuid = "46757867-2c16-5918-afeb-47bfcb05e46a"
+version = "0.4.5"
+
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
@@ -2705,6 +3014,12 @@ version = "3.1.4+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+0"
+
+[[deps.OpenML]]
+deps = ["ARFFFiles", "HTTP", "JSON", "Markdown", "Pkg", "Scratch"]
+git-tree-sha1 = "6efb039ae888699d5a74fb593f6f3e10c7193e33"
+uuid = "8b6db2d4-7670-4922-a472-f9537c81ab66"
+version = "0.3.1"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -2888,6 +3203,11 @@ git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.2"
 
+[[deps.PolynomialRoots]]
+git-tree-sha1 = "5f807b5345093487f733e520a1b7395ee9324825"
+uuid = "3a141323-8675-5d76-9d11-e1df1406c778"
+version = "1.0.0"
+
 [[deps.Polynomials]]
 deps = ["LinearAlgebra", "RecipesBase"]
 git-tree-sha1 = "3aa2bb4982e575acd7583f01531f241af077b163"
@@ -2939,6 +3259,11 @@ deps = ["TOML"]
 git-tree-sha1 = "7eb1686b4f04b82f96ed7a4ea5890a4f0c7a09f1"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.4.0"
+
+[[deps.PrettyPrinting]]
+git-tree-sha1 = "22a601b04a154ca38867b991d5017469dc75f2db"
+uuid = "54e16d92-306c-5ea0-a30b-337be88ac337"
+version = "0.4.1"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "Printf", "Reexport", "StringManipulation", "Tables"]
@@ -3162,10 +3487,22 @@ git-tree-sha1 = "65c2e6ced6f62ea796af251eb292a0e131a3613b"
 uuid = "c0aeaf25-5076-4817-a8d5-81caf7dfa961"
 version = "0.3.6"
 
+[[deps.ScientificTypes]]
+deps = ["CategoricalArrays", "ColorTypes", "Dates", "Distributions", "PrettyTables", "Reexport", "ScientificTypesBase", "StatisticalTraits", "Tables"]
+git-tree-sha1 = "75ccd10ca65b939dab03b812994e571bf1e3e1da"
+uuid = "321657f4-b219-11e9-178b-2701a2544e81"
+version = "3.0.2"
+
 [[deps.ScientificTypesBase]]
 git-tree-sha1 = "a8e18eb383b5ecf1b5e6fc237eb39255044fd92b"
 uuid = "30f210dd-8aff-4c5f-94ba-8e64358c1161"
 version = "3.0.0"
+
+[[deps.ScikitLearnBase]]
+deps = ["LinearAlgebra", "Random", "Statistics"]
+git-tree-sha1 = "7877e55c1523a4b336b433da39c8e8c08d2f221f"
+uuid = "6e75b9c4-186b-50bd-896f-2d2496a4843e"
+version = "0.5.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -3334,6 +3671,12 @@ deps = ["CRC32c", "Compat", "Dates", "SHA", "Tables", "TupleTools", "UUIDs"]
 git-tree-sha1 = "0b8b801b8f03a329a4e86b44c5e8a7d7f4fe10a3"
 uuid = "c5dd0088-6c3f-4803-b00e-f31a60c170fa"
 version = "0.3.1"
+
+[[deps.StableRNGs]]
+deps = ["Random", "Test"]
+git-tree-sha1 = "3be7d49667040add7ee151fefaf1f8c04c8c8276"
+uuid = "860ef19b-820b-49d6-a774-d7a799459cd3"
+version = "1.0.0"
 
 [[deps.StackViews]]
 deps = ["OffsetArrays"]
@@ -3829,14 +4172,11 @@ version = "3.5.0+0"
 # ╠═bbf8da5b-4974-4d78-a849-ad6afb28435c
 # ╠═a4b978d6-d395-4e49-8adf-578efab2a9d0
 # ╠═31c21f8e-09c7-4eaa-b5f6-fc2046f77b0a
-# ╠═968adac3-56eb-4ccd-b6a0-9bab802cce29
 # ╟─a3916666-7788-4716-8d6f-3ea75d9c6ad1
 # ╠═c963e92f-9116-4ff8-a874-e3e25340e4ae
-# ╠═4399b11b-6814-4899-8f6a-12fd9549e3cf
+# ╟─4399b11b-6814-4899-8f6a-12fd9549e3cf
 # ╠═a8575e86-a5f8-4743-bb15-1166a236431a
 # ╠═ff9c0134-2139-4ee6-b81e-5a4b34484619
-# ╠═4c13eeaf-f04b-46eb-bcea-771307f8ee1b
-# ╠═6c9967ee-2655-4015-81a1-377c46038629
 # ╟─18e627c6-3dca-4d6d-a825-5884c5541ffb
 # ╠═57e70c41-2f0d-45a4-8db4-4575e396614b
 # ╠═3435f07d-89b0-4f9b-b08f-2443d72c3ac6
@@ -3846,20 +4186,21 @@ version = "3.5.0+0"
 # ╠═ccf8907a-bfe8-4cda-9c93-65c150c63753
 # ╠═f962030e-63be-49ba-b382-97be6620654a
 # ╠═e6cb58ee-6a3b-48de-9a0f-7bc09cc2c3ee
+# ╟─ebcc8d82-3448-4e6d-9a05-f3393f2b8127
 # ╟─765ce44e-73ed-484e-81f2-c68c23090372
 # ╠═6a157ab7-d741-45c9-b9fa-d7a7f409c6f5
 # ╠═06c74bfb-a643-4550-8d9a-a8edeac37cd7
 # ╠═f7427228-0848-49cb-b024-96d225602583
 # ╟─f1f2be71-a396-40fc-9bfa-b9c63afa07f5
+# ╟─b25630ca-ca7b-4d8d-ba70-44f6c04a7787
 # ╠═2c8a7b9b-6b02-4ea2-a909-1cf8e9f31c04
 # ╠═24bcdd0b-7cee-4613-a70f-fdc11d3d7c4f
 # ╟─7df74cd0-89e8-4452-9a58-3e4b3c51db2f
-# ╠═4dcb0a2c-f491-4e00-a19e-a015d8949922
 # ╠═b99c2a27-32b5-4020-9bd2-802d66cbcb15
 # ╠═96712a8d-3c61-41fd-8136-7cda92d810f7
 # ╠═e30f995e-98c6-4633-8e6b-3d83d7ff38fe
 # ╠═8e3b1614-e430-4876-9887-0cfab25e6e66
-# ╟─b25630ca-ca7b-4d8d-ba70-44f6c04a7787
+# ╠═f87fbe41-a249-4ab0-b777-f83e18490f4b
 # ╟─b0fa75ce-37ef-45b2-be50-0a2b596a85ec
 # ╠═9e5b4fdd-9695-4ec5-960b-2e66a788303a
 # ╟─544f893e-9780-41d2-b749-4f1cb7b6ede5
@@ -3877,39 +4218,43 @@ version = "3.5.0+0"
 # ╟─bb892363-8e90-46c2-a67c-e6a47ffb9d1c
 # ╟─bb52ed90-afbb-4fd0-9ead-aeabd421dc9b
 # ╠═1fc7fea6-66d0-480b-adc8-b7f5e360316c
-# ╠═98b14086-bc8c-4725-bf46-8e09f698c2f0
+# ╟─98b14086-bc8c-4725-bf46-8e09f698c2f0
 # ╟─31ae04fd-ed82-43bb-b16b-9eb8064060aa
-# ╠═a8210381-8b08-456e-aadc-34c0dde1e693
-# ╠═89a8b900-98aa-4214-8b83-9c5cb6d12110
+# ╟─a8210381-8b08-456e-aadc-34c0dde1e693
+# ╟─89a8b900-98aa-4214-8b83-9c5cb6d12110
 # ╠═c28f5865-7e3c-4d19-83f9-ce85b0e1fefe
 # ╟─110d3a52-bd9a-47f3-8246-064ab1a15bfd
 # ╠═46b4ab6f-f88c-4c4f-8127-d1526f01b559
 # ╟─777cc42b-aa3c-4c07-a0b6-b33d265f7c98
 # ╠═3ea35338-0f95-4f9e-9daf-f7db5e7bad4d
-# ╠═59c12b90-8fe7-4d02-887d-99f82109cdcc
+# ╠═6f3b2def-2058-4ad7-ae04-5f02f3373a63
+# ╠═05ca9a83-a2db-4cbe-9c50-f29fdbd458d0
 # ╠═595944a9-152a-4877-ad74-a75cbdfe7e9f
 # ╠═785678a8-6590-43fd-bb32-d8f10859f48f
 # ╟─cb3738f3-a46b-4533-9a58-d35b97012794
 # ╟─545fcee8-d741-41ea-a14a-2e334427fa82
 # ╟─5ec7d837-3729-449b-9477-7b30c981d730
-# ╠═f0b9c97d-31ce-4016-90e3-c5c30116d4b6
+# ╟─f0b9c97d-31ce-4016-90e3-c5c30116d4b6
+# ╟─bea306d3-ccd5-48da-a299-3bc247d6b16a
+# ╠═d340101a-d932-4035-baf1-ee772e9bf25d
+# ╠═1c250ad7-d21f-4d49-929a-e900ba8c9e48
+# ╠═461440fc-91a5-449d-b887-a477caecf1dc
 # ╟─2ba9129b-dcf4-478c-be28-b74ccb1ecffc
 # ╠═e539b501-d588-4d46-ba13-38d5e04b7529
 # ╟─54b8147e-355b-46da-929a-0ac8b1979d68
 # ╠═296e8d4e-2441-4133-936d-dba7f9b80147
-# ╠═455b8f56-3f09-4c00-9c77-4e396f19709c
 # ╠═fed19876-0b3a-48d4-8152-0ff6e3224b4e
+# ╟─44f3069f-c051-4d76-af7e-09e48a31a5a8
 # ╠═d9881c88-93ca-47de-9b40-6880046fa720
-# ╠═0d06817a-cc68-4b16-a853-627e2f582e6e
 # ╠═9e0675fd-a898-4c3f-9a11-3774329983ae
-# ╠═01365c09-0987-481c-bb8f-bd0eb01584ce
+# ╠═f5ab2a8c-f6ef-41c3-b76a-2fafecc8ec83
 # ╟─1e9d739b-0a95-49e6-a489-4f2730799a5e
 # ╠═5706cf61-07da-460b-92af-a5d0e30ae67a
 # ╠═83e0de6d-948f-49a9-b027-1a11faf63e6e
 # ╠═3cb07396-07be-404f-a09a-4de20a43af05
 # ╟─feb1b91a-dcbb-458d-aa0e-58a21a926ad0
 # ╠═7953f1cd-ee07-4013-8428-7f122e6e8b84
-# ╠═51b2a265-a432-4ccb-8ecb-742737385dbd
+# ╟─51b2a265-a432-4ccb-8ecb-742737385dbd
 # ╠═dd3d1812-0057-4407-9121-69925c3770df
 # ╟─668347ff-0585-4169-8aab-94ee771a55ba
 # ╠═1fca0668-c559-40d5-8345-7939a0dee9f2
@@ -3920,8 +4265,9 @@ version = "3.5.0+0"
 # ╟─4caaf820-b27d-4944-907d-76517c5afc23
 # ╠═b591ff2a-0e48-4a05-997e-56ec4a3b09b4
 # ╠═d498a775-3c0c-49fe-8078-d4e00d97e142
-# ╠═014cec12-8e87-4ff1-a5a0-d25acc58bd4b
+# ╟─014cec12-8e87-4ff1-a5a0-d25acc58bd4b
 # ╠═6efc1438-c7af-4845-a4e8-493224d8c984
+# ╠═57f343a6-9373-4cc4-abd0-fa8859d20c29
 # ╟─cb4c24b0-245c-4aed-b34c-123234b45926
 # ╟─ca63b3f6-f303-4319-bec5-23e0e40df2ca
 # ╟─ea2ec924-ae59-4522-9f80-fd689b6fcad2
@@ -3950,5 +4296,7 @@ version = "3.5.0+0"
 # ╟─e95ba453-1bed-49a0-8c8e-a42eb297a895
 # ╠═dc3f9a1a-eb21-4d59-a8fd-fe4d3b6f3173
 # ╠═8cf888ba-d162-4a28-a1ce-12b34e839f5e
+# ╠═ee05c5c2-e15d-4615-b95c-fc0827b9660a
+# ╠═bfcb705c-78d4-4d67-a52b-42ab12d717a9
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
