@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.42
+# v0.19.43
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,11 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -20,15 +24,15 @@ using PythonCall
 
 # ╔═╡ bb2d7aa2-f244-4163-8b21-6dd367c465d5
 begin
-using CondaPkg
-	CondaPkg.add("numpy")
+    using CondaPkg
+    CondaPkg.add("numpy")
 end
 
 # ╔═╡ 83ed505e-21f8-11ee-1d5c-0f27e8691b73
 begin
-	using PlutoTeachingTools # showing Question-Boxes
-	using GR # plotting
-	using PlutoUI # Sliders
+    using PlutoTeachingTools # showing Question-Boxes
+    using GR # plotting
+    using PlutoUI # Sliders
 end
 
 # ╔═╡ 5b23e82b-04e3-4fcf-ac7a-2624a8f2112b
@@ -42,55 +46,55 @@ Author: [Benedikt Ehinger](www.s-ccs.de)
 """
 
 # ╔═╡ 7a6668e7-b619-4f6d-9ff6-9f1d4128954c
-Markdown.MD(Markdown.Admonition("warning", "Where to start",[md""" What follows is some code that you could read/inspect, but mostly you can ignore it for the exercises at hand. 
+Markdown.MD(Markdown.Admonition("warning", "Where to start", [md""" What follows is some code that you could read/inspect, but mostly you can ignore it for the exercises at hand. 
 
-Start at **Task 1** """]))
+ Start at **Task 1** """]))
 
 # ╔═╡ 4d4685dc-5e45-4893-8a26-3d553cff3bc8
-function lorenz_step(state,fixed,Δt)
+function lorenz_step(state, fixed, Δt)
     x, y, z = state   # current state
-	σ, ρ, β = fixed   # current coefficients
-    
-    dx = σ*(y-x)
-    dy = x*(ρ-z) - y
-    dz = x*y - β*z
-	
-	return [x + Δt*dx,
-			y + Δt*dy,
-			z + Δt*dz] # return the new state
+    σ, ρ, β = fixed   # current coefficients
+
+    dx = σ * (y - x)
+    dy = x * (ρ - z) - y
+    dz = x * y - β * z
+
+    return [x + Δt * dx,
+        y + Δt * dy,
+        z + Δt * dz] # return the new state
 end;
 
 # ╔═╡ 10ab9257-3073-4f20-924b-29b2990e32a6
 aside(tip(md"""
 This function allocates a new array everytime it updates - it is thus slower than it could be. Be we will optimize it later in Task 4.
-"""),v_offset=-250)
+"""), v_offset=-250)
 
 # ╔═╡ 869c811e-bd7a-485e-bac4-4cf0006daeab
-function lorenz(fixed,Δt,n)
-	state0 = [1.0, 0.0, 0.0] # initial state
-	res = Array{Float64}(undef,(3,n+1)) # initialize an Array to save things
-	res[:,1] .= state0 # assign the initial state
-	
-	for t in 1:n
-		res[:,t+1] = lorenz_step(res[:,t],fixed,Δt)
-	end
+function lorenz(fixed, Δt, n)
+    state0 = [1.0, 0.0, 0.0] # initial state
+    res = Array{Float64}(undef, (3, n + 1)) # initialize an Array to save things
+    res[:, 1] .= state0 # assign the initial state
 
-	# Lorenz wants to escape often, we have to check to not get weird error for weird parameters
-	nans = isnan.(res) .| isinf.(res) .| (res.>1e3)
-	any(nans) ? @warn("Lorenz escaped - we ran into NaN/Infinity - choose different parameters") : ""
-	
-	return res[:,.!any(nans,dims=1)[1,:]][:,1:end-1]
+    for t in 1:n
+        res[:, t+1] = lorenz_step(res[:, t], fixed, Δt)
+    end
+
+    # Lorenz wants to escape often, we have to check to not get weird error for weird parameters
+    nans = isnan.(res) .| isinf.(res) .| (res .> 1e3)
+    any(nans) ? @warn("Lorenz escaped - we ran into NaN/Infinity - choose different parameters") : ""
+
+    return res[:, .!any(nans, dims=1)[1, :]][:, 1:end-1]
 end;
 
 # ╔═╡ d22214ac-838b-4e69-8b46-dc62985f959d
 begin
-Δt = 0.05
-Tmax = 100
-tlist = range(0,Tmax,step=Δt)
+    Δt = 0.05
+    Tmax = 100
+    tlist = range(0, Tmax, step=Δt)
 end;
 
 # ╔═╡ 97a8b38a-dc20-450a-b574-e3e9d4c87e57
-aside(tip(md"we use GR.jl here instead of Makie.jl for the better RAM-footprint of the former. Makie.jl generates a little bit more beautiful plots ;)"),v_offset=-540)
+aside(tip(md"we use GR.jl here instead of Makie.jl for the better RAM-footprint of the former. Makie.jl generates a little bit more beautiful plots ;)"), v_offset=-540)
 
 # ╔═╡ d5df570b-19c8-46e6-acd8-f70cf20f9eac
 md"""
@@ -103,14 +107,14 @@ Using the `Pluto.jl` reactive backend, changing a value in some cell will automa
 question_box(md"Change one of the values below of the `parameters` Vector - the plot should immediately update")
 
 # ╔═╡ 3fdc5e18-c563-499d-bc7a-4ce8200b4d3f
-parameters = [5,7,7/8] # in the lorenz_step-function: [σ, ρ, β]
+parameters = [5, 7, 7 / 8] # in the lorenz_step-function: [σ, ρ, β]
 
 # ╔═╡ da95a4dd-c814-4c6c-b06f-61d34240ea55
-res = lorenz(parameters,Δt,length(tlist))
+res = lorenz(parameters, Δt, length(tlist))
 
 # ╔═╡ c7114d34-2e1e-441e-b2cb-31b37dcf7f15
 begin
-	f = plot(res[1,:],res[2,:],res[3,:])
+    f = plot(res[1, :], res[2, :], res[3, :])
 end
 
 # ╔═╡ afb15a36-e6c5-4be9-aa8d-beecdb4a70f0
@@ -156,7 +160,9 @@ You can get the fancy `σ`, `ρ`, `β` characters by typing e.g. `\beta` + `TAB`
 f # replot for your convenience
 
 # ╔═╡ e911dd57-bedd-49a9-adcf-ec634e668e6f
-tip(Foldable("You want more beautiful sliders?",md"""
+tip(Foldable(
+    "You want more beautiful sliders?",
+    md"""
 You can specify default values + show the values via
 ```julia
 @bind var PlutoUI.Slider(0:10,show_value=true,default=defaultvalue)
@@ -170,12 +176,13 @@ md\"\"\"
 |param1| $(@bind var PlutoUI.Slider(0:10,show_value=true,default=defaultvalue))
 \"\"\"
 ```
-**Tip:** the `$(juliacode)` syntax runs the inline `juliacode` and 'interpolates' the output back into the string/output format """))
+**Tip:** the `$(juliacode)` syntax runs the inline `juliacode` and 'interpolates' the output back into the string/output format """
+))
 
 # ╔═╡ aea4a4c9-3c02-4436-8d11-21140264c807
-Markdown.MD(Markdown.Admonition("tip","Bonus-Question",[md"""
-If you have time, provide some `PlutoUI.CheckBox` or `PlutoUI.Select` elements, to change which dimension is plotted on the x/y axis
-"""]))
+Markdown.MD(Markdown.Admonition("tip", "Bonus-Question", [md"""
+  If you have time, provide some `PlutoUI.CheckBox` or `PlutoUI.Select` elements, to change which dimension is plotted on the x/y axis
+  """]))
 
 
 # ╔═╡ c5791eb1-62e4-47a0-bdc1-c3cb2066bd90
@@ -188,32 +195,32 @@ np = PythonCall.pyimport("numpy");
 
 # ╔═╡ b2137820-d51c-4a9f-8b5a-73f3f7f6cb1b
 begin
-	# this is not exactly how'd you use e.g. numpy from python - because you could just use the package "as if" it would be a julia package
-python_results = pyexec(@NamedTuple{xyzs},"""
-import numpy as np
-def lorenz(xyz,fixed):
-    import numpy as np
-    s,r,b = (fixed[0],fixed[1],fixed[2])
-    x, y, z = xyz
-    x_dot = s*(y - x)
-    y_dot = r*x - y - x*z
-    z_dot = x*y - b*z
-    return np.array([x_dot, y_dot, z_dot])
+    # this is not exactly how'd you use e.g. numpy from python - because you could just use the package "as if" it would be a julia package
+    python_results = pyexec(@NamedTuple{xyzs}, """
+     import numpy as np
+     def lorenz(xyz,fixed):
+         import numpy as np
+         s,r,b = (fixed[0],fixed[1],fixed[2])
+         x, y, z = xyz
+         x_dot = s*(y - x)
+         y_dot = r*x - y - x*z
+         z_dot = x*y - b*z
+         return np.array([x_dot, y_dot, z_dot])
 
 
-xyzs = np.empty((num_steps + 1, 3))  # Need one more for the initial values
-xyzs[0] = (1.0, 0., 0.)  # Set initial values
-# Step through "time", calculating the partial derivatives at the current point
-# and using them to estimate the next point
-for i in range(num_steps):
-    xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i],fixed) * dt
+     xyzs = np.empty((num_steps + 1, 3))  # Need one more for the initial values
+     xyzs[0] = (1.0, 0., 0.)  # Set initial values
+     # Step through "time", calculating the partial derivatives at the current point
+     # and using them to estimate the next point
+     for i in range(num_steps):
+         xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i],fixed) * dt
 
-""",Main,(;fixed=parameters,num_steps=length(tlist)-1,dt=Δt))
-	python_results = collect(pyconvert(Array,python_results.xyzs)')
+     """, Main, (; fixed=parameters, num_steps=length(tlist) - 1, dt=Δt))
+    python_results = collect(pyconvert(Array, python_results.xyzs)')
 end
 
 # ╔═╡ 9ec4822e-8d7b-4948-afe9-228ca2d924ae
-julia_results = lorenz(parameters,Δt,length(tlist))
+julia_results = lorenz(parameters, Δt, length(tlist))
 
 # ╔═╡ ab1eabac-cd53-49a5-80db-edf01124071a
 question_box(md"""
@@ -246,7 +253,7 @@ If you are super fast with everything, some optional ideas:
 # ╔═╡ 88a8cdfb-5300-41c6-a9ba-2da53d37ee91
 question_box(md"""**Speeding up Python**
 
-Can you speed up the python code to match Julias code?
+Can you speed up the python code to match Julia's code?
 """)
 
 # ╔═╡ 003214b4-e62c-432a-a9a7-9b580c460de4
@@ -280,32 +287,43 @@ What follows here is just some setup code - interesting maybe to see how Python-
 TableOfContents()
 
 # ╔═╡ 8a224690-723a-4af2-8733-8a0a83f7812b
-PlutoTeachingTools.hint(title::String,str) = Markdown.MD(Markdown.Admonition("hint",title,[str]))
+PlutoTeachingTools.hint(title::String, str) = Markdown.MD(Markdown.Admonition("hint", title, [str]))
 
 # ╔═╡ 003cd0f8-b7cb-4770-9135-df5058b52a09
-hint("Slider-Solution",md"""
+hint(
+    "Slider-Solution",
+    md"""
 ```julia
 # for one slider:
 @bind σ PlutoUI.Slider(1:0.1:10)
 parameters= [σ, 12/3,4]
 ```
-""")
+"""
+)
 
 # ╔═╡ 21ecad53-8987-44c2-81d8-6c6374dcd073
-hint("Hover to see the answer and follow up task",md"""
+hint(
+    "Hover to see the answer and follow up task",
+    md"""
 They are not!
 
 **Task**: Calculate and plot the elementwise differences in one dimension. Use `plot`,`.-`(elementwise subtraction) and `x[1,:]` to access one dimension
 
-""")
+"""
+)
 
 # ╔═╡ 11280da3-437a-45a6-bc6f-92ca2d03a98b
-hint("Hint",md"""
+hint(
+    "Hint",
+    md"""
 Ooops - I don't know Python well enough to actually speed this up, sorry. Be sure to share your speed improvements with me!
-""")
+"""
+)
 
 # ╔═╡ 250144dd-9034-4c05-9316-7bb89df429bf
-hint("Solution",md"""
+hint(
+    "Solution",
+    md"""
 Make use of the following function
 ```julia
 function lorenz_step!(state,fixed,Δt)
@@ -319,16 +337,20 @@ function lorenz_step!(state,fixed,Δt)
 	return copy(state) # also return a copy of the state
 end
 ```
-""")
+"""
+)
 
 # ╔═╡ 49576c5c-15d6-4c56-8190-f2ce022e6233
-hint("Bonus: For the super-curious minded", md"""
+hint(
+    "Bonus: For the super-curious minded",
+    md"""
 Somewhat surprising (to me) this code:
 ```julia
 res = hcat([lorenz_step!(state0,fixed,Δt) for s in tlist]...)
 ```
 has the same fast performance as the loop!
-""")
+"""
+)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.42
+# v0.19.43
 
 using Markdown
 using InteractiveUtils
@@ -586,7 +586,7 @@ md"""
 # ╔═╡ 89a8b900-98aa-4214-8b83-9c5cb6d12110
 md"""
 ### 1. Tasks
-- lightweight, I/O, event handling, 
+- Lightweight, I/O, event handling, 
 - Communication via `Channels` possible
 - `wait`/`fetch`
 - Multi-Thread possible
@@ -612,7 +612,7 @@ end
 md"""
 ## 2. Threads
 - Multi-CPU/Thread
-- shared memory
+- Shared memory
 """
 
 
@@ -657,10 +657,10 @@ begin
 end
 
 # ╔═╡ 595944a9-152a-4877-ad74-a75cbdfe7e9f
-@time calc_π_serial(20,nTimes)
+@time calc_π_serial(20, nTimes)
 
 # ╔═╡ 785678a8-6590-43fd-bb32-d8f10859f48f
-@time calc_π_parallel(20,nTimes)
+@time calc_π_parallel(20, nTimes)
 
 # ╔═╡ cb3738f3-a46b-4533-9a58-d35b97012794
 md"""
@@ -790,17 +790,17 @@ md"""
 
 |➕ | ➖ |
 |:---|---|
-|🚀 Speed of calculation |  Installation-times 🐌|
+|🚀 Speed of calculation |  Installation time 🐌|
 |🔤 Explicit syntax | Time-to-first-X (but getting there) 🐌|
 |📦 PackageManager ♥ | No concept of traits/interfaces, makes inheritance hard|
 |👨‍👨‍👦‍👦 Community is very helpful  | Ecosystem is small (but sufficient imho)🌏|
-|🧮 LinAlg/numpy included    |  No julia-emoji yet|
+|🧮 LinAlg/numpy included    |  No Julia emoji yet|
 |$$\LaTeX$$; `\beta = β`    |  |
 |Developing, testing, documenting packages is easy / good workflows    |  |
-|💸 it is free    |  |
-|📈 growing users and interactions    |  |
-|🐍 Interoperability with python/R is solid  |  |
-|🎉 it's surprisingly fun!  | |
+|💸 Free    |  |
+|📈 Growing users and interactions    |  |
+|🐍 Interoperability with Python/R is solid  |  |
+|🎉 Surprisingly fun!  | |
 
 """
 
@@ -941,7 +941,7 @@ import Unitful.s as sec
 # ╔═╡ ca63b3f6-f303-4319-bec5-23e0e40df2ca
 md"""
 ## Conclusion
-The `native` implementations of Python & Julia of this simple operation are optimized and similarly fast, R ~3x slower - but only in Julia can you use non-native code (for loops) and be fast at the same time)!
+The `native` Python & Julia implementations of this simple operation are optimized and similarly fast, R is ~3x slower. But only in Julia can you use non-native code (for loops) and be fast at the same time!)
 """
 
 
@@ -956,7 +956,7 @@ md"""
 # ╔═╡ 090d4e9d-fec4-4a26-91d2-43719434c52e
 md"""
 # But why is it faster?
-In julia, everything has a `type` - (built-in types are not special, you can build your own + gain same speed increases!!)
+In Julia, everything has a `type`. Built-in types are not special, you can build your own + gain same speed increases!!
 """
 
 # ╔═╡ f548d4d0-2e1a-4183-98b3-bb1d3609b130
@@ -1032,7 +1032,7 @@ pos(x) = x < 0 ? 0 : x
 
 # ╔═╡ f31c3252-3080-4450-8ee0-05429cb3397b
 md"""
-## Why Julia is fast: Operator-fusion
+## Why Julia is fast: Operator fusion
 [Source: Julia Blog 2017](https://julialang.org/blog/2017/01/moredots/)
 
 Imagine:
@@ -1042,7 +1042,7 @@ f(A) = 3*A^2 + (5*A^3 - sqrt(A))
 y = f([1,2,3,4])
 ```
 
-In most programming languages, we need a lot of temporary arrays to solve this - assuming single operations are already vectorized
+In most programming languages, we need a lot of temporary arrays to solve this, assuming individual operations are already vectorized.
 ```
 tmp1 = A^2
 tmp2 = 3*tmp1
@@ -1054,21 +1054,19 @@ x = tmp2 + tmp6
 ```
 
 
-
-
 """
 
 # ╔═╡ d7a0eace-e3c7-41b2-ae2f-9bce5cc7c94a
 md"""
 #
-In Julia, the different code-optimization steps do something funny:
+In Julia, the different code optimization steps do something odd:
 
 if you provide a `broadcasted` - that is - a function with `.`-operators:
 ```julia
 y =  3 .* x.^2 .+ 4 .* x .+ 7 .* x.^3;
 ```
 
-instead of allocating temporary arrays, it translates it back into a for-loop
+Instead of allocating temporary arrays it translates it back into a for-loop:
 ```julia
 for i in eachindex(A)
     x = A[i]

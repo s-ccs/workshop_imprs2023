@@ -7,7 +7,14 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(
+                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
+                "AbstractPlutoDingetjes",
+            )].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -16,9 +23,9 @@ end
 
 # ╔═╡ 83ed505e-21f8-11ee-1d5c-0f27e8691b73
 begin
-	using PlutoTeachingTools
-	using CairoMakie
-	using PlutoUI
+    using PlutoTeachingTools
+    using CairoMakie
+    using PlutoUI
 end
 
 # ╔═╡ 4904a74d-ec8c-4d1d-aab9-fb89f16d4bd9
@@ -27,34 +34,34 @@ using PythonCall
 
 # ╔═╡ bb2d7aa2-f244-4163-8b21-6dd367c465d5
 begin
-using CondaPkg
-	CondaPkg.add("numpy")
+    using CondaPkg
+    CondaPkg.add("numpy")
 end
 
 # ╔═╡ da95a4dd-c814-4c6c-b06f-61d34240ea55
 using BenchmarkTools
 
 # ╔═╡ 4d4685dc-5e45-4893-8a26-3d553cff3bc8
-function lorenz_step(state,fixed,Δt)
+function lorenz_step(state, fixed, Δt)
     x, y, z = state   #variables are part of vector array u
-	σ, ρ, β = fixed    #coefficients are part of vector array p
-    
-    dx = σ*(y-x)
-    dy = x*(ρ-z) - y
-    dz = x*y - β*z
-	return [x + Δt*dx, y + Δt*dy, z + Δt*dz] # in place update the state
+    σ, ρ, β = fixed    #coefficients are part of vector array p
+
+    dx = σ * (y - x)
+    dy = x * (ρ - z) - y
+    dz = x * y - β * z
+    return [x + Δt * dx, y + Δt * dy, z + Δt * dz] # in place update the state
 end
 
 # ╔═╡ c3d904b4-41e3-4bed-a690-c4bd2e6707ea
-function lorenz_step!(state,fixed,Δt)
+function lorenz_step!(state, fixed, Δt)
     x, y, z = state   #variables are part of vector array u
-	σ, ρ, β = fixed    #coefficients are part of vector array p
-    
-    dx = σ*(y-x)
-    dy = x*(ρ-z) - y
-    dz = x*y - β*z
-	state .= x + Δt*dx, y + Δt*dy, z + Δt*dz # in place update the state
-	return copy(state) # also return a copy of the state
+    σ, ρ, β = fixed    #coefficients are part of vector array p
+
+    dx = σ * (y - x)
+    dy = x * (ρ - z) - y
+    dz = x * y - β * z
+    state .= x + Δt * dx, y + Δt * dy, z + Δt * dz # in place update the state
+    return copy(state) # also return a copy of the state
 end
 
 # ╔═╡ 8d1d73c2-fc7b-46c3-8f8d-5347d7df995c
@@ -67,13 +74,13 @@ PythonCall.pyimport("numpy")
 #@code_lowered lor3()
 
 # ╔═╡ 44ac9d5c-87a9-4ccf-9880-a4d8b18afcea
-@bind σ PlutoUI.Slider(0:0.1:20,show_value=true,default=10)
+@bind σ PlutoUI.Slider(0:0.1:20, show_value = true, default = 10)
 
 # ╔═╡ bf96ca48-4d54-43d8-8a5d-1cbba3cca9a3
-@bind ρ PlutoUI.Slider(0:0.1:50,show_value=true,default=28)
+@bind ρ PlutoUI.Slider(0:0.1:50, show_value = true, default = 28)
 
 # ╔═╡ c4b23a67-3d23-4231-ad70-6ec78a1988f8
-@bind β PlutoUI.Slider(0:0.1:10,show_value=true,default=8/3)
+@bind β PlutoUI.Slider(0:0.1:10, show_value = true, default = 8 / 3)
 
 # ╔═╡ 3fdc5e18-c563-499d-bc7a-4ce8200b4d3f
 #Coefficients of the functions. 
@@ -81,45 +88,45 @@ fixed = [σ, ρ, β]
 
 # ╔═╡ d22214ac-838b-4e69-8b46-dc62985f959d
 begin
-Δt = 0.0001
-Tmax = 30
-tlist = range(0,Tmax,step=Δt)
-	
-function lor1()
-	state0 = [1.0, 0.0, 0.0]	
-	res = Array{Float64}(undef,(3,length(tlist)))
-	res[:,1] .= state0
-	for t in 1:length(tlist)-1
-		res[:,t+1] = lorenz_step(res[:,t],fixed,Δt)
-	end
-	return res
-end
-	function lor4()
-	state0 = [1.0, 0.0, 0.0]	
-	res = Array{Float64}(undef,(3,length(tlist)))
-	for col in eachcol(res)
-	col .= lorenz_step!(state0,fixed,Δt)
-	end
+    Δt = 0.0001
+    Tmax = 30
+    tlist = range(0, Tmax, step = Δt)
+
+    function lor1()
+        state0 = [1.0, 0.0, 0.0]
+        res = Array{Float64}(undef, (3, length(tlist)))
+        res[:, 1] .= state0
+        for t = 1:length(tlist)-1
+            res[:, t+1] = lorenz_step(res[:, t], fixed, Δt)
+        end
+        return res
+    end
+    function lor4()
+        state0 = [1.0, 0.0, 0.0]
+        res = Array{Float64}(undef, (3, length(tlist)))
+        for col in eachcol(res)
+            col .= lorenz_step!(state0, fixed, Δt)
+        end
 
 
-	return res
-end
-function lor2()
-	state0 = [1.0, 0.0, 0.0]	
-	res = Array{Float64}(undef,(3,length(tlist)))
-	@inbounds for col in eachcol(res)
-	col .= lorenz_step!(state0,fixed,Δt)
-	end
+        return res
+    end
+    function lor2()
+        state0 = [1.0, 0.0, 0.0]
+        res = Array{Float64}(undef, (3, length(tlist)))
+        @inbounds for col in eachcol(res)
+            col .= lorenz_step!(state0, fixed, Δt)
+        end
 
 
-	return res
-end
-function lor3()
-	state0 = [1.0, 0.0, 0.0]	
-	res = [lorenz_step!(state0,fixed,Δt) for t = tlist]
-	res = hcat(res...)
-	return res
-end
+        return res
+    end
+    function lor3()
+        state0 = [1.0, 0.0, 0.0]
+        res = [lorenz_step!(state0, fixed, Δt) for t in tlist]
+        res = hcat(res...)
+        return res
+    end
 
 
 end;
@@ -140,7 +147,9 @@ length(tlist)
 res = lor3();
 
 # ╔═╡ b2137820-d51c-4a9f-8b5a-73f3f7f6cb1b
-@btime xyzs = pyexec(@NamedTuple{xyzs},"""
+@btime xyzs = pyexec(
+    @NamedTuple{xyzs},
+    """
 import numpy as np
 def lorenz(xyz,fixed):
     import numpy as np
@@ -162,15 +171,18 @@ xyzs[0] = (1.0, 0., 0.)  # Set initial values
 for i in range(num_steps):
     xyzs[i + 1] = xyzs[i] + lorenz(xyzs[i],fixed) * dt
 
-""",Main,(;fixed=fixed))
+""",
+    Main,
+    (; fixed = fixed),
+)
 
 # ╔═╡ 405b7f4e-5dd9-4e9d-8fbf-cd0a979aefd1
 begin
-f,ax,h = lines(res[1,:],res[2,:],color=res[3,:])
-	lim=50
-xlims!(-lim,lim)
-ylims!(-lim,lim)
-f
+    f, ax, h = lines(res[1, :], res[2, :], color = res[3, :])
+    lim = 50
+    xlims!(-lim, lim)
+    ylims!(-lim, lim)
+    f
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
