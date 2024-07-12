@@ -38,7 +38,7 @@ end
 # ╔═╡ 5b23e82b-04e3-4fcf-ac7a-2624a8f2112b
 md"""
 # The Lorenz Function
-Interactive get-to-know-julia notebook for the **2024 Lab Retreat**
+Interactive get-to-know Julia notebook for the **2024 Lab Retreat**.
 
 Author: [Benedikt Ehinger](www.s-ccs.de)
 
@@ -66,13 +66,13 @@ end;
 
 # ╔═╡ 10ab9257-3073-4f20-924b-29b2990e32a6
 aside(tip(md"""
-This function allocates a new array everytime it updates - it is thus slower than it could be. Be we will optimize it later in Task 4.
+This function allocates a new array every time it is updated, so it is slower than it could be. We will optimize it later in Task 4.
 """), v_offset=-250)
 
 # ╔═╡ 869c811e-bd7a-485e-bac4-4cf0006daeab
 function lorenz(fixed, Δt, n)
     state0 = [1.0, 0.0, 0.0] # initial state
-    res = Array{Float64}(undef, (3, n + 1)) # initialize an Array to save things
+    res = Array{Float64}(undef, (3, n + 1)) # initialize an Array to save data
     res[:, 1] .= state0 # assign the initial state
 
     for t in 1:n
@@ -94,17 +94,17 @@ begin
 end;
 
 # ╔═╡ 97a8b38a-dc20-450a-b574-e3e9d4c87e57
-aside(tip(md"we use GR.jl here instead of Makie.jl for the better RAM-footprint of the former. Makie.jl generates a little bit more beautiful plots ;)"), v_offset=-540)
+aside(tip(md"We use GR.jl here instead of Makie.jl for the better RAM footprint of the former. Makie.jl generates a little bit more beautiful plots ;)"), v_offset=-540)
 
 # ╔═╡ d5df570b-19c8-46e6-acd8-f70cf20f9eac
 md"""
 # Task 1: Changing parameters
 
-Using the `Pluto.jl` reactive backend, changing a value in some cell will automatically update all other cells - including plots.
+With the `Pluto.jl` reactive backend, a change of value in one cell will automatically update all other cells, including plots.
 """
 
 # ╔═╡ a7302ba3-5620-43e6-aee1-abc46393c265
-question_box(md"Change one of the values below of the `parameters` Vector - the plot should immediately update")
+question_box(md"Change one of the values below of the `parameters` Vector and the plot should immediately update")
 
 # ╔═╡ 3fdc5e18-c563-499d-bc7a-4ce8200b4d3f
 parameters = [5, 7, 7 / 8] # in the lorenz_step-function: [σ, ρ, β]
@@ -126,20 +126,19 @@ PlutoTeachingTools.aside
 # ╔═╡ 49342d6f-a24a-42aa-9f90-dfff82ad35c2
 md"""
 # Task 2: Sliders
-We can use Sliders instead of fixing the parameters. 
+We can use Sliders instead of tweaking the parameters. 
 
 A slider is defined like this:
 ```julia
 @bind yourVarName PlutoUI.Slider(from:to) 
 ```
 
-If you want to specify the step-size just use `from:step:to` or `range(from,stop=to,step=x)`
+If you want to specify the step size just use `from:step:to` or `range(from, stop=to, step=x)`
 """
 
 
-
 # ╔═╡ 4856cd8b-26de-4577-ac1a-497aef8d1931
-question_box(md"""Generate three sliders for the three parameters in `parameters`. Remember to replace your chosen variablenames in the `parameters` vector itself!
+question_box(md"""Generate three sliders for the three parameters in `parameters`. Remember to replace your chosen variable names in the `parameters` vector itself!
 """)
 
 # ╔═╡ e580399e-bfed-414b-8437-48c1f5d6afb3
@@ -161,11 +160,11 @@ f # replot for your convenience
 
 # ╔═╡ e911dd57-bedd-49a9-adcf-ec634e668e6f
 tip(Foldable(
-    "You want more beautiful sliders?",
+    "Do you want more beautiful sliders?",
     md"""
 You can specify default values + show the values via
 ```julia
-@bind var PlutoUI.Slider(0:10,show_value=true,default=defaultvalue)
+@bind var PlutoUI.Slider(0:10, show_value = true, default = defaultvalue)
 ```
 
 If you  want to be super fancy, you can put all this in a nice table, providing labels to your sliders:
@@ -239,9 +238,9 @@ md"""
 """
 
 # ╔═╡ 4019ad17-50b0-4983-b375-e237219b99e0
-question_box(md""" Add the `@time` macro infront of the python & julia code to evaluate their timing. 
+question_box(md""" Add the `@time` macro in front of your Python & Julia code. This will evaluate your timing.
 
-**Note:** In principle, you should use `BenchmarkTools.@btime` or `BenchmarkTools.@benchmark` which runs the function many times and takes the fastest (`@btime`) or shows a histogram (@benchmark) - but who has time for that?
+**Note:** In principle, you should use `BenchmarkTools.@btime` or `BenchmarkTools.@benchmark` which runs the function many times and takes the fastest (`@btime`) or shows a histogram (@benchmark). But who has time for that?
 """)
 
 # ╔═╡ 73af4c85-8170-4404-aac7-9d45e698769a
@@ -253,21 +252,21 @@ If you are super fast with everything, some optional ideas:
 # ╔═╡ 88a8cdfb-5300-41c6-a9ba-2da53d37ee91
 question_box(md"""**Speeding up Python**
 
-Can you speed up the python code to match Julia's code?
+Can you speed up the Python code to match Julia's code?
 """)
 
 # ╔═╡ 003214b4-e62c-432a-a9a7-9b580c460de4
 question_box(md"""**Speeding up Julia**
 
-If we can replace the for loop + Lorenz-function with something like
+If we can replace the for loop + Lorenz function with something like
 ```julia
 for col in eachcol(res)
-		col .= lorenz_step!(state0,fixed,Δt)
+		col .= lorenz_step!(state0, fixed, Δt)
 end
 ```
-We have some further optimization potential.
+We still have some optimization potential.
 
-Note the `lorenz_step!` exclamationmark. Which means, that now the lorenz_step function has to also update the `state0` array with the `.=` syntax inside the function (and also return a copy of the state to be saved in `col`)
+Note the `lorenz_step!` exclamation mark. Which means, that now the lorenz_step function has to also update the `state0` array with the `.=` syntax inside the function (and also return a copy of the state to be saved in `col`)
 
 
 
@@ -280,7 +279,7 @@ md"""
 
 # ╔═╡ 02172a1a-ac29-4081-886d-a2daeab0d29d
 md"""
-What follows here is just some setup code - interesting maybe to see how Python-Packages can be added in the `PythonCall` package
+What follows here is just some setup code - interesting maybe to see how Python packages can be added in the `PythonCall` package
 """
 
 # ╔═╡ 609633d1-2b1b-4834-a1c3-84ffe11bc946
@@ -296,7 +295,7 @@ hint(
 ```julia
 # for one slider:
 @bind σ PlutoUI.Slider(1:0.1:10)
-parameters= [σ, 12/3,4]
+parameters = [σ, 12/3, 4]
 ```
 """
 )
@@ -307,7 +306,7 @@ hint(
     md"""
 They are not!
 
-**Task**: Calculate and plot the elementwise differences in one dimension. Use `plot`,`.-`(elementwise subtraction) and `x[1,:]` to access one dimension
+**Task**: Calculate and plot the elementwise differences in one dimension. Use `plot`, `.-`(elementwise subtraction) and `x[1,:]` to access one dimension
 
 """
 )
@@ -326,9 +325,9 @@ hint(
     md"""
 Make use of the following function
 ```julia
-function lorenz_step!(state,fixed,Δt)
-    x, y, z = state   #variables are part of vector array u
-	σ, ρ, β = fixed    #coefficients are part of vector array p
+function lorenz_step!(state, fixed, Δt)
+    x, y, z = state   # variables are part of vector array u
+	σ, ρ, β = fixed    # coefficients are part of vector array p
     
     dx = σ*(y-x)
     dy = x*(ρ-z) - y
@@ -346,7 +345,7 @@ hint(
     md"""
 Somewhat surprising (to me) this code:
 ```julia
-res = hcat([lorenz_step!(state0,fixed,Δt) for s in tlist]...)
+res = hcat([lorenz_step!(state0, fixed, Δt) for s in tlist]...)
 ```
 has the same fast performance as the loop!
 """
