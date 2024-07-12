@@ -7,11 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try
-            Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value
-        catch
-            b -> missing
-        end
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -81,7 +77,7 @@ function lorenz(fixed, Δt, n)
 
     # Lorenz wants to escape often, we have to check to not get weird error for weird parameters
     nans = isnan.(res) .| isinf.(res) .| (res .> 1e3)
-    any(nans) ? @warn("Lorenz escaped - we ran into NaN/Infinity - choose different parameters") : ""
+    any(nans) ? @warn("We ran into NaN/Infinity and Lorenz function escaped. Choose different parameters") : ""
 
     return res[:, .!any(nans, dims=1)[1, :]][:, 1:end-1]
 end;
@@ -104,10 +100,10 @@ With the `Pluto.jl` reactive backend, a change of value in one cell will automat
 """
 
 # ╔═╡ a7302ba3-5620-43e6-aee1-abc46393c265
-question_box(md"Change one of the values below of the `parameters` Vector and the plot should immediately update")
+question_box(md"Change one of the values below of the `parameters`. Vector and the plot should immediately update")
 
 # ╔═╡ 3fdc5e18-c563-499d-bc7a-4ce8200b4d3f
-parameters = [5, 7, 7 / 8] # in the lorenz_step-function: [σ, ρ, β]
+parameters = [5, 7, 7 / 8] # in the lorenz_step function: [σ, ρ, β]
 
 # ╔═╡ da95a4dd-c814-4c6c-b06f-61d34240ea55
 res = lorenz(parameters, Δt, length(tlist))
@@ -266,9 +262,8 @@ end
 ```
 We still have some optimization potential.
 
-Note the `lorenz_step!` exclamation mark. Which means, that now the lorenz_step function has to also update the `state0` array with the `.=` syntax inside the function (and also return a copy of the state to be saved in `col`)
-
-
+Note the `lorenz_step!` exclamation mark. Which means, that now the lorenz_step function has to also update the `state0` array with the `.=` syntax inside the function.
+And also return a copy of the state to be saved in `col`.
 
 """)
 
@@ -279,7 +274,7 @@ md"""
 
 # ╔═╡ 02172a1a-ac29-4081-886d-a2daeab0d29d
 md"""
-What follows here is just some setup code - interesting maybe to see how Python packages can be added in the `PythonCall` package
+What follows here is just some setup code. Interesting to see how Python packages can be added in the `PythonCall` package.
 """
 
 # ╔═╡ 609633d1-2b1b-4834-a1c3-84ffe11bc946
