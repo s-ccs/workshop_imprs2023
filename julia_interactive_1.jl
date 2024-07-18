@@ -18,6 +18,9 @@ end
 # ╠═╡ show_logs = false
 using PythonCall
 
+# ╔═╡ c590899d-0947-4d06-8226-f5675f865b1f
+using Chairmarks
+
 # ╔═╡ bb2d7aa2-f244-4163-8b21-6dd367c465d5
 begin
 using CondaPkg
@@ -77,7 +80,7 @@ function lorenz(fixed,Δt,n)
 
 	# Lorenz wants to escape often, we have to check to not get weird error for weird parameters
 	nans = isnan.(res) .| isinf.(res) .| (res.>1e3)
-	any(nans) ? @warn("Lorenz escaped - we ran into NaN/Infinity - choose different parameters") : ""
+	any(nans) ? @warn("Lorenz escaped - the dynamic systen created a NaN inf value - choose different parameters") : ""
 	
 	return res[:,.!any(nans,dims=1)[1,:]][:,1:end-1]
 end;
@@ -90,7 +93,7 @@ tlist = range(0,Tmax,step=Δt)
 end;
 
 # ╔═╡ 97a8b38a-dc20-450a-b574-e3e9d4c87e57
-aside(tip(md"we use GR.jl here instead of Makie.jl for the better RAM-footprint of the former. Makie.jl generates a little bit more beautiful plots ;)"),v_offset=-540)
+aside(tip(md"we use GR.jl here instead of Makie.jl, due to RAM limitations when 20+ users run this notebook. Makie.jl generates a little bit more beautiful plots ;)"),v_offset=-540)
 
 # ╔═╡ d5df570b-19c8-46e6-acd8-f70cf20f9eac
 md"""
@@ -210,6 +213,15 @@ for i in range(num_steps):
 
 """,Main,(;fixed=parameters,num_steps=length(tlist)-1,dt=Δt))
 	python_results = collect(pyconvert(Array,python_results.xyzs)')
+end
+
+# ╔═╡ b77c0616-6a14-4620-81ba-c176924f3588
+let
+	vec = collect(range(1,1_000_000));
+	x = 20_000_000
+	vec_py = np.array(vec)
+@b np.isin(x,vec_py)
+
 end
 
 # ╔═╡ 9ec4822e-8d7b-4948-afe9-228ca2d924ae
@@ -333,6 +345,7 @@ has the same fast performance as the loop!
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+Chairmarks = "0ca39b1e-fe0b-4e98-acfc-b1656634c4de"
 CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
 GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
@@ -340,7 +353,9 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 
 [compat]
+Chairmarks = "~1.2.1"
 CondaPkg = "~0.2.18"
+GR = "~0.73.6"
 PlutoTeachingTools = "~0.2.12"
 PlutoUI = "~0.7.51"
 PythonCall = "~0.9.13"
@@ -352,7 +367,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.0"
 manifest_format = "2.0"
-project_hash = "0dfb0b08c1ebef6c019a27b5ae80b2721750cdbc"
+project_hash = "9a312d2b0472d743838c73ee4f67e2ab59b285e6"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -386,6 +401,16 @@ deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jl
 git-tree-sha1 = "a2f1c8c668c8e3cb4cca4e57a8efdb09067bb3fd"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.0+2"
+
+[[deps.Chairmarks]]
+deps = ["Printf"]
+git-tree-sha1 = "989bd3bb757ac0231fc77103e1b516e05c7d21f1"
+uuid = "0ca39b1e-fe0b-4e98-acfc-b1656634c4de"
+version = "1.2.1"
+weakdeps = ["Statistics"]
+
+    [deps.Chairmarks.extensions]
+    StatisticsChairmarksExt = ["Statistics"]
 
 [[deps.CodeTracking]]
 deps = ["InteractiveUtils", "UUIDs"]
@@ -1360,6 +1385,8 @@ version = "1.4.1+1"
 # ╠═4904a74d-ec8c-4d1d-aab9-fb89f16d4bd9
 # ╠═a69b3724-353f-4639-81f4-0875c4203e12
 # ╠═b2137820-d51c-4a9f-8b5a-73f3f7f6cb1b
+# ╠═c590899d-0947-4d06-8226-f5675f865b1f
+# ╠═b77c0616-6a14-4620-81ba-c176924f3588
 # ╠═9ec4822e-8d7b-4948-afe9-228ca2d924ae
 # ╟─ab1eabac-cd53-49a5-80db-edf01124071a
 # ╠═5b309790-4c82-447d-b910-d5a469e52211
