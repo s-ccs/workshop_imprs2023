@@ -29,7 +29,7 @@ end
 # ╔═╡ bb2d7aa2-f244-4163-8b21-6dd367c465d5
 begin
 	ENV["JULIA_CONDAPKG_BACKEND"] ="MicroMamba"
-	#using CondaPkg
+	#using CondaPkg # if you manually want to add PythonPackages
 	#CondaPkg.add("numpy")
 	using PythonCall
 end
@@ -291,9 +291,6 @@ md"""
 What follows here is just some setup code - interesting maybe to see how Python-Packages can be added in the `PythonCall` package
 """
 
-# ╔═╡ 469f3010-649f-43f4-a403-eafe5b3ac471
-CondaPkg.update()
-
 # ╔═╡ 609633d1-2b1b-4834-a1c3-84ffe11bc946
 TableOfContents()
 
@@ -397,7 +394,6 @@ has the same fast performance as the loop!
 # ╟─ce86adc0-f10d-47c9-9436-a6b20c2d496e
 # ╟─02172a1a-ac29-4081-886d-a2daeab0d29d
 # ╠═bb2d7aa2-f244-4163-8b21-6dd367c465d5
-# ╠═469f3010-649f-43f4-a403-eafe5b3ac471
 # ╠═609633d1-2b1b-4834-a1c3-84ffe11bc946
 # ╠═924a83e4-92a1-4176-9cd2-c48f866bffec
 # ╠═83ed505e-21f8-11ee-1d5c-0f27e8691b73
