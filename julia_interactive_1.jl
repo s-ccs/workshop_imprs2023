@@ -99,9 +99,6 @@ md"""
 Using the `Pluto.jl` reactive backend, changing a value in some cell will automatically update all other cells - including plots.
 """
 
-# ╔═╡ 334f156f-7f7a-4fcf-8ed9-adb22eb095fb
-
-
 # ╔═╡ a7302ba3-5620-43e6-aee1-abc46393c265
 question_box(md"Change one of the values below of the `parameters` Vector - the plot should immediately update")
 
@@ -121,8 +118,8 @@ end
 # ╔═╡ afb15a36-e6c5-4be9-aa8d-beecdb4a70f0
 f # replot for convenience
 
-# ╔═╡ e4bac073-56b3-4379-bcf8-adbd3d246c26
-PlutoTeachingTools.aside
+# ╔═╡ fc18aae4-95bd-403d-8622-19b4427b1a62
+WGLMakie.Page()
 
 # ╔═╡ 49342d6f-a24a-42aa-9f90-dfff82ad35c2
 md"""
@@ -182,6 +179,12 @@ Markdown.MD(Markdown.Admonition("tip","Bonus-Question",[md"""
 If you have time, provide some `PlutoUI.CheckBox` or `PlutoUI.Select` elements, to change which dimension is plotted on the x/y axis
 """]))
 
+
+# ╔═╡ ff7fc057-bfae-44a0-8226-e65ceb7852ff
+@bind finished_1_2 PlutoUI.CounterButton("Task 1 & 2 finished? Click here!")
+
+# ╔═╡ 1689e308-077d-49d3-9096-c43ec76b49bc
+finished_1_2 > 0 ? 	confetti() : nothing
 
 # ╔═╡ c5791eb1-62e4-47a0-bdc1-c3cb2066bd90
 md"""
@@ -251,6 +254,25 @@ question_box(md""" Add the `@time` macro infront of the python & julia code to e
 
 **Note:** In principle, you should use `BenchmarkTools.@btime` or `BenchmarkTools.@benchmark` which runs the function many times and takes the fastest (`@btime`) or shows a histogram (@benchmark) - but who has time for that?
 """)
+
+# ╔═╡ fd76dacf-3402-4b93-9357-9a2106e29bf5
+	@bind finished PlutoUI.CounterButton("Tasks 3 & 4 finished? Click here!")
+
+# ╔═╡ 74b7885a-24d5-4f27-8f60-4b009c34166c
+if finished >0
+md"""
+#### You did it! 
+	
+Congratulations - You unlocked a secret: You can now activate the Rainbow Cursor to celebrate!
+"""
+end
+
+# ╔═╡ b70f27e9-8c91-450a-89b5-0962f66d7a66
+if finished  > 0
+		@bind rainbow PlutoUI.Radio(["Add rainbow cursor!", "Add Julia fan cursor!","Remove all cursors again 😢"])
+else
+	rainbow = nothing
+end
 
 # ╔═╡ 73af4c85-8170-4404-aac7-9d45e698769a
 md"""
@@ -348,6 +370,77 @@ res = hcat([lorenz_step!(state0,fixed,Δt) for s in tlist]...)
 has the same fast performance as the loop!
 """)
 
+# ╔═╡ 3745eb8b-99d7-4d09-b84e-c97e0b7449a9
+if "Add rainbow cursor!" ==  rainbow
+HTML("""
+<script>
+	 			 const {
+rainbowCursor : rainbowCursor
+} = await import("https://unpkg.com/cursor-effects@latest/dist/esm.js");
+
+	try{window.cursor_rainbow.destroy()}catch(error){;}
+	let cursor_rainbow = new rainbowCursor({length: 70,
+  size: 5,});
+	window.cursor_rainbow = cursor_rainbow
+	
+</script>
+""")
+elseif "Add Julia fan cursor!" == rainbow
+HTML("""
+<script>
+	 			 const {
+textFlag : textFlag
+} = await import("https://unpkg.com/cursor-effects@latest/dist/esm.js");
+
+	try{window.cursor_unfold.destroy()}catch(error){;}
+	let cursor_unfold = new textFlag({text:"I ❤ Julia"});
+	window.cursor_unfold = cursor_unfold
+	
+</script>
+""")
+		 
+else
+HTML("""
+<script>
+	 try {
+    window.cursor_unfold.destroy()
+	 }catch(error){;}
+	 
+	window.cursor_rainbow.destroy()
+	
+</script>
+""")
+end
+
+# ╔═╡ d94e0b3b-3f83-4777-bcd5-7e5e5a9283a7
+HTML("""
+<style>
+	 div.input{
+	 align:center;
+	 }
+input{
+                display: inline-block;
+                outline: 0;
+                cursor: pointer;
+                border-radius: 6px;
+                border: 2px solid #9558B2;
+                color: #9558B2;
+                background: 0 0;
+                padding: 8px;
+                box-shadow: rgba(0, 0, 0, 0.07) 0px 2px 4px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1.5px 0px;
+                font-weight: 800;
+                font-size: 16px;
+                
+	 }
+ input:hover{
+                    background-color: #9558B2;
+                    color: #fff;
+                }
+
+</style>
+
+""")
+
 # ╔═╡ Cell order:
 # ╟─5b23e82b-04e3-4fcf-ac7a-2624a8f2112b
 # ╟─7a6668e7-b619-4f6d-9ff6-9f1d4128954c
@@ -358,11 +451,10 @@ has the same fast performance as the loop!
 # ╠═da95a4dd-c814-4c6c-b06f-61d34240ea55
 # ╠═c7114d34-2e1e-441e-b2cb-31b37dcf7f15
 # ╟─d5df570b-19c8-46e6-acd8-f70cf20f9eac
-# ╠═334f156f-7f7a-4fcf-8ed9-adb22eb095fb
 # ╟─a7302ba3-5620-43e6-aee1-abc46393c265
 # ╠═3fdc5e18-c563-499d-bc7a-4ce8200b4d3f
 # ╠═afb15a36-e6c5-4be9-aa8d-beecdb4a70f0
-# ╠═e4bac073-56b3-4379-bcf8-adbd3d246c26
+# ╠═fc18aae4-95bd-403d-8622-19b4427b1a62
 # ╟─49342d6f-a24a-42aa-9f90-dfff82ad35c2
 # ╟─4856cd8b-26de-4577-ac1a-497aef8d1931
 # ╟─e580399e-bfed-414b-8437-48c1f5d6afb3
@@ -373,6 +465,8 @@ has the same fast performance as the loop!
 # ╟─e911dd57-bedd-49a9-adcf-ec634e668e6f
 # ╟─003cd0f8-b7cb-4770-9135-df5058b52a09
 # ╟─aea4a4c9-3c02-4436-8d11-21140264c807
+# ╟─ff7fc057-bfae-44a0-8226-e65ceb7852ff
+# ╟─1689e308-077d-49d3-9096-c43ec76b49bc
 # ╟─c5791eb1-62e4-47a0-bdc1-c3cb2066bd90
 # ╠═a69b3724-353f-4639-81f4-0875c4203e12
 # ╠═aee0ec79-0ce7-4908-90d6-a95cf81d38ee
@@ -385,6 +479,9 @@ has the same fast performance as the loop!
 # ╠═0734c0d9-06c6-445f-bbda-3b8294e89cc6
 # ╟─f2094213-2243-4978-824a-37e1987b9631
 # ╟─4019ad17-50b0-4983-b375-e237219b99e0
+# ╟─fd76dacf-3402-4b93-9357-9a2106e29bf5
+# ╟─74b7885a-24d5-4f27-8f60-4b009c34166c
+# ╟─b70f27e9-8c91-450a-89b5-0962f66d7a66
 # ╟─73af4c85-8170-4404-aac7-9d45e698769a
 # ╟─88a8cdfb-5300-41c6-a9ba-2da53d37ee91
 # ╟─11280da3-437a-45a6-bc6f-92ca2d03a98b
@@ -398,3 +495,5 @@ has the same fast performance as the loop!
 # ╠═924a83e4-92a1-4176-9cd2-c48f866bffec
 # ╠═83ed505e-21f8-11ee-1d5c-0f27e8691b73
 # ╠═8a224690-723a-4af2-8733-8a0a83f7812b
+# ╠═3745eb8b-99d7-4d09-b84e-c97e0b7449a9
+# ╠═d94e0b3b-3f83-4777-bcd5-7e5e5a9283a7
